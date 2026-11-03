@@ -1,8 +1,7 @@
 # Pages
 
-> Status: **planned** (v1). The data and the API behind these pages are already
-> available (see `docs/technical/api.md`); the screens are not built yet.
-> Examples show the intended behavior.
+> Status: **available** (v1a). Open http://localhost:5173 after `make dev`.
+> Package vulnerabilities from OSV and GitHub (v1b) are not included yet.
 
 ## Vulnerability list
 
@@ -24,11 +23,17 @@ of checking several websites.
 
 Any value we do not have is shown as "not available". Nothing is guessed.
 
+**How to use it:** type in the search box and/or set filters, then press
+**Apply**. **Reset** clears everything. Click the **CVSS**, **EPSS** or **Date
+added** header to sort; click again to reverse. Use **Previous / Next** to move
+between pages. The address bar keeps your filters, so you can reload the page
+or bookmark a search.
+
 **Filters** (can be combined):
 - Date added: from / to.
 - Technology: e.g. `Java`.
 - Vendor / product: e.g. vendor `apache`, product `log4j`.
-- Severity: e.g. only High and Critical.
+- Severity: tick one or more levels, e.g. High and Critical.
 - Minimum EPSS: e.g. `0.5` shows only those with 50% or more.
 - Used in ransomware: yes.
 
@@ -40,22 +45,28 @@ returns critical Java vulnerabilities that are very likely to be exploited.
 
 ## Vulnerability detail
 
+**How to open it:** click a CVE ID in the list (or go to `/cve/CVE-2021-44228`).
+**← Back to list** returns to your previous search with the same filters.
+
 **Problem it solves:** understand one vulnerability fully.
 
 **What you see:** all fields from the list, plus the full description, CVSS
 vector, affected products and versions, links to references and advisories,
-and which sources reported it (CISA KEV, NVD, EPSS, OSV, GitHub).
+and the KEV remediation due date.
 
-External text is always shown as plain text for safety.
+External text is always shown as plain text for safety, and links are only
+clickable when they start with `http` or `https`.
+
+If the CVE is not in the database you see a message saying so.
 
 ## Keeping data fresh
 
 Data is not updated automatically. Run `make ingest` to refresh it (the first
 run takes about 20 minutes because of NVD's request limits; later runs are fast).
 
-## Planned availability
+## What is available
 
-| Page | Version |
-|------|---------|
-| List and detail with KEV, NVD and EPSS data | v1a |
-| Package vulnerabilities for Maven and npm (OSV, GitHub) | v1b |
+| Page | Status |
+|------|--------|
+| List and detail with KEV, NVD and EPSS data | Available (v1a) |
+| Package vulnerabilities for Maven and npm (OSV, GitHub) | Planned (v1b) |

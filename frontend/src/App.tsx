@@ -1,21 +1,24 @@
-import { useEffect, useState } from "react";
+import { Link, Route, Routes } from "react-router-dom";
 
-type ApiStatus = "loading" | "ok" | "error";
+import DetailPage from "./pages/DetailPage";
+import ListPage from "./pages/ListPage";
 
-/** Minimal shell that checks the backend is reachable. */
+/** Layout and routes. */
 export default function App() {
-  const [status, setStatus] = useState<ApiStatus>("loading");
-
-  useEffect(() => {
-    fetch("/api/health")
-      .then((res) => (res.ok ? setStatus("ok") : setStatus("error")))
-      .catch(() => setStatus("error"));
-  }, []);
-
   return (
-    <main>
-      <h1>CVE Research App</h1>
-      <p>API status: {status}</p>
-    </main>
+    <>
+      <header className="site-header">
+        <Link to="/" className="brand">
+          CVE Research App
+        </Link>
+      </header>
+      <main>
+        <Routes>
+          <Route path="/" element={<ListPage />} />
+          <Route path="/cve/:cveId" element={<DetailPage />} />
+          <Route path="*" element={<p>Page not found. <Link to="/">Go to the list</Link></p>} />
+        </Routes>
+      </main>
+    </>
   );
 }

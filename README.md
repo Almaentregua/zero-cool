@@ -27,7 +27,8 @@ make install   # install backend and frontend dependencies
 make dev       # API on :8000, frontend on :5173
 ```
 
-Open http://localhost:5173. API docs (OpenAPI) are at http://localhost:8000/docs.
+Open http://localhost:5173. First load data with `make ingest` (the first NVD run takes
+about 20 minutes; the list works with partial data in the meantime). API docs (OpenAPI) are at http://localhost:8000/docs.
 
 ## Configuration
 
