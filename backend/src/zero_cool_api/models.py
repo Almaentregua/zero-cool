@@ -65,6 +65,83 @@ class Reference(Base):
     vulnerability: Mapped[Vulnerability] = relationship(back_populates="references")
 
 
+class Advisory(Base):
+    """A security advisory for packages (GitHub Advisory Database, via OSV).
+
+    Unlike :class:`Vulnerability`, an advisory is identified by its own id
+    (e.g. ``GHSA-jfh8-c2jp-5v3q``) because not every advisory has a CVE.
+    """
+
+    __tablename__ = "advisories"
+    __table_args__ = (Index("ix_advisory_published_at", "published_at"),)
+
+    id: Mapped[str] = mapped_column(primary_key=True)
+    summary: Mapped[str | None]
+    details: Mapped[str | None]
+    severity: Mapped[str | None]  # LOW / MEDIUM / HIGH / CRITICAL (GitHub's MODERATE -> MEDIUM)
+    cvss_vector: Mapped[str | None]  # the score is not provided by OSV and is never computed
+    published_at: Mapped[datetime | None]
+    modified_at: Mapped[datetime | None]
+    github_reviewed: Mapped[bool | None]
+
+    # Highest EPSS among the advisory's CVEs; None when it has no CVE or none has a score.
+    epss_score: Mapped[float | None]
+    epss_percentile: Mapped[float | None]
+
+    cves: Mapped[list["AdvisoryCve"]] = relationship(
+        back_populates="advisory", cascade="all, delete-orphan"
+    )
+    packages: Mapped[list["AdvisoryPackage"]] = relationship(
+        back_populates="advisory", cascade="all, delete-orphan"
+    )
+    references: Mapped[list["AdvisoryReference"]] = relationship(
+        back_populates="advisory", cascade="all, delete-orphan"
+    )
+
+
+class AdvisoryCve(Base):
+    """A CVE id an advisory is also known as. An advisory may have several or none."""
+
+    __tablename__ = "advisory_cves"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    advisory_id: Mapped[str] = mapped_column(ForeignKey("advisories.id"), index=True)
+    cve_id: Mapped[str] = mapped_column(index=True)
+
+    advisory: Mapped[Advisory] = relationship(back_populates="cves")
+
+
+class AdvisoryPackage(Base):
+    """A package affected by an advisory, with its version ranges as OSV reports them."""
+
+    __tablename__ = "advisory_packages"
+    __table_args__ = (Index("ix_advisory_package_name", "ecosystem", "name"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    advisory_id: Mapped[str] = mapped_column(ForeignKey("advisories.id"), index=True)
+    ecosystem: Mapped[str]  # as in OSV, e.g. Maven, npm
+    name: Mapped[str]
+    # JSON list of OSV range objects, stored untouched: the app does not interpret
+    # version ranges (Maven and npm order versions differently).
+    ranges_json: Mapped[str | None]
+    # Comma separated versions that fix the advisory, extracted from the ranges.
+    fixed_versions: Mapped[str | None]
+
+    advisory: Mapped[Advisory] = relationship(back_populates="packages")
+
+
+class AdvisoryReference(Base):
+    """An external link related to an advisory."""
+
+    __tablename__ = "advisory_references"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    advisory_id: Mapped[str] = mapped_column(ForeignKey("advisories.id"), index=True)
+    url: Mapped[str]
+
+    advisory: Mapped[Advisory] = relationship(back_populates="references")
+
+
 def severity_from_cvss(score: float | None) -> str | None:
     """Map a CVSS base score to its qualitative severity.
 

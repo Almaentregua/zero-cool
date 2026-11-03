@@ -21,6 +21,36 @@ and shown as "not available"; values are never guessed.
 ## `references`
 `id`, `cve_id` (FK), `url`: external links per vulnerability (NVD). Only `http(s)` URLs are kept.
 
+## Package advisories (v1b)
+
+Separate from `vulnerabilities` because an advisory is identified by its own id and many
+have no CVE. See [ADR 0003](adr/0003-package-advisories-from-osv.md).
+
+### `advisories`
+| Column | Notes |
+|--------|-------|
+| `id` (PK) | e.g. `GHSA-jfh8-c2jp-5v3q` |
+| `summary`, `details` | `details` is Markdown from the source: show as plain text |
+| `severity` | LOW / MEDIUM / HIGH / CRITICAL (GitHub's MODERATE becomes MEDIUM) |
+| `cvss_vector` | The score is not provided by OSV and is never computed |
+| `published_at`, `modified_at` | |
+| `github_reviewed` | Whether GitHub reviewed it |
+| `epss_score`, `epss_percentile` | Highest EPSS among its CVEs; `NULL` if it has no CVE or no score |
+
+### `advisory_cves`
+`advisory_id` (FK), `cve_id`. An advisory can have several CVEs or none. Joining on
+`cve_id` links an advisory to a row of `vulnerabilities` when that CVE is in KEV.
+
+### `advisory_packages`
+`advisory_id` (FK), `ecosystem` (Maven, npm), `name`, `ranges_json` (OSV ranges, untouched),
+`fixed_versions` (comma separated, extracted from the ranges). One advisory can affect
+many packages (Log4Shell lists 10).
+
+### `advisory_references`
+`advisory_id` (FK), `url` (http/https only).
+
+Withdrawn advisories and malicious-package reports are not stored.
+
 ## Technologies
 Not stored in the database. They live in `technologies.yaml`; filtering by
 technology expands to its vendor/product pairs.
