@@ -1,18 +1,22 @@
 # Technologies tracked by the app. To add one, add an entry; no code changes.
 #   name:            display name used in the technology filter
 #   osv_ecosystems:  OSV.dev / GitHub ecosystem names (v1b)
-#   products:        vendor/product pairs as written in CISA KEV / NVD (lowercase)
+#   products:        vendor/product pairs exactly as CISA KEV writes them.
+#                    Matching ignores letter case and requires the full text to match.
 technologies:
   - name: Java
     osv_ecosystems: [Maven]
     products:
-      - {vendor: apache, product: log4j}
-      - {vendor: apache, product: struts}
-      - {vendor: apache, product: tomcat}
-      - {vendor: oracle, product: weblogic_server}
-      - {vendor: vmware, product: spring_framework}
+      - {vendor: Apache, product: Log4j2}
+      - {vendor: Apache, product: Struts}
+      - {vendor: Apache, product: Struts 1}
+      - {vendor: Apache, product: Struts 2}
+      - {vendor: Apache, product: Tomcat}
+      - {vendor: Oracle, product: WebLogic Server}
+      - {vendor: Oracle, product: Java SE}
+      - {vendor: VMware, product: Spring Framework}
   - name: Node.js
     osv_ecosystems: [npm]
     products:
-      - {vendor: nodejs, product: node.js}
-      - {vendor: openjsf, product: express}
+      - {vendor: Npm package, product: System Information Library for Node.JS}
+      - {vendor: MongoDB, product: mongo-express}

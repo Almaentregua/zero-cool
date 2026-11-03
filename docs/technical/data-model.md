@@ -10,7 +10,7 @@ and shown as "not available"; values are never guessed.
 |--------|--------|-------|
 | `cve_id` (PK) | KEV | e.g. `CVE-2021-44228` |
 | `title`, `description` | KEV / NVD | |
-| `vendor`, `product` | KEV | Used to match technologies |
+| `vendor`, `product` | KEV | Stored exactly as KEV writes them (e.g. `Apache`, `Log4j2`); used to match technologies |
 | `is_kev`, `date_added`, `kev_due_date` | KEV | `date_added` is the "date added" filter |
 | `ransomware_use` | KEV | `NULL` = unknown |
 | `cvss_score`, `cvss_vector`, `published_at`, `modified_at` | NVD | |

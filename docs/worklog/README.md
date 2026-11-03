@@ -6,4 +6,4 @@ the end of that day's file.
 ## Current state
 - Working: nothing yet
 - In progress: project setup
-- Next steps: approve v1a plan, CISA KEV ingestion
+- Next steps: NVD client for KEV CVEs, then EPSS

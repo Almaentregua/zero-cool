@@ -1,0 +1,41 @@
+{
+  "title": "CISA Catalog of Known Exploited Vulnerabilities",
+  "catalogVersion": "2026.01.01",
+  "count": 4,
+  "vulnerabilities": [
+    {
+      "cveID": "CVE-2021-44228",
+      "vendorProject": "Apache",
+      "product": "Log4j2",
+      "vulnerabilityName": "Apache Log4j2 Remote Code Execution Vulnerability",
+      "dateAdded": "2021-12-10",
+      "shortDescription": "Apache Log4j2 contains a vulnerability in JNDI features.",
+      "dueDate": "2021-12-24",
+      "knownRansomwareCampaignUse": "Known"
+    },
+    {
+      "cveID": "cve-2020-0001",
+      "vendorProject": "Acme\u0000 Corp",
+      "product": "Widget",
+      "vulnerabilityName": "Widget flaw",
+      "dateAdded": "2022-03-03",
+      "shortDescription": "<script>alert(1)</script> text",
+      "dueDate": "2022-03-24",
+      "knownRansomwareCampaignUse": "Unknown"
+    },
+    {
+      "cveID": "NOT-A-CVE",
+      "vendorProject": "Bad",
+      "product": "Record",
+      "dateAdded": "2022-01-01",
+      "knownRansomwareCampaignUse": "Unknown"
+    },
+    {
+      "cveID": "CVE-2022-0002",
+      "vendorProject": "NoDate",
+      "product": "Record",
+      "dateAdded": "not a date",
+      "knownRansomwareCampaignUse": "Unknown"
+    }
+  ]
+}

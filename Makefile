@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 .PHONY: help install install-backend install-frontend dev backend frontend \
-        test test-backend test-frontend lint format typecheck check build clean
+        ingest-kev test test-backend test-frontend lint format typecheck check build clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -21,6 +21,9 @@ backend: ## Run the API with auto-reload on :8000
 
 frontend: ## Run the Vite dev server on :5173
 	cd frontend && npm run dev
+
+ingest-kev: ## Download the CISA KEV catalog into the local database
+	cd backend && uv run python -m zero_cool_api.ingest kev
 
 test: test-backend test-frontend ## Run all tests
 

@@ -7,12 +7,17 @@ error (missing file, bad YAML, wrong shape, duplicate names).
 
 Location: `backend/technologies.yaml` (override with `TECHNOLOGIES_FILE`).
 
+Matching against vulnerabilities ignores letter case but needs the full vendor
+and product text to match, exactly as CISA KEV writes them (for example
+`Apache` / `Log4j2`, `Oracle` / `WebLogic Server`). Look up the exact spelling
+in the KEV catalog or in the app after ingestion.
+
 ```yaml
 technologies:
   - name: Java                 # shown in the technology filter (unique, case-insensitive)
     osv_ecosystems: [Maven]    # OSV / GitHub ecosystems (used in v1b)
-    products:                  # vendor/product pairs as written in KEV / NVD, lowercase
-      - {vendor: apache, product: log4j}
+    products:                  # vendor/product pairs exactly as written in KEV
+      - {vendor: Apache, product: Log4j2}
 ```
 
 To add Go, append:
@@ -21,8 +26,9 @@ To add Go, append:
   - name: Go
     osv_ecosystems: [Go]
     products:
-      - {vendor: golang, product: go}
+      - {vendor: Golang, product: Go}
 ```
 
-The initial vendor/product lists are a starting point and should be reviewed
-against real KEV data once ingestion exists.
+The initial lists were taken from the real KEV catalog (checked 2026-11-02) but
+are a starting point: KEV has many more Java-related products (for example
+Apache Tomcat variants or Spring components). Extend them as needed.

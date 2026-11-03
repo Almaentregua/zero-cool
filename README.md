@@ -50,6 +50,7 @@ Run `make help` for the full list. Main targets:
 | `make install` | Install all dependencies |
 | `make dev` | Run backend and frontend together |
 | `make backend` / `make frontend` | Run one side only |
+| `make ingest-kev` | Download CISA KEV into the local database (manual, safe to repeat) |
 | `make test` | Run backend (pytest) and frontend (Vitest) tests |
 | `make lint` / `make format` | Lint / format |
 | `make typecheck` | mypy (backend) and tsc (frontend) |
