@@ -28,6 +28,7 @@ const detail: VulnerabilityDetail = {
   modified_at: null,
   kev_due_date: "2021-12-24",
   references: ["https://example.test/advisory", "javascript:alert(1)"],
+  advisories: [],
 };
 
 function listPage(items = [log4j], total = items.length): VulnerabilityPage {

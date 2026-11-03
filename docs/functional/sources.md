@@ -11,7 +11,7 @@ different question about the same vulnerability (CVE).
 | **CISA KEV** | Is it already being exploited in real attacks? | The list of exploited CVEs, with vendor, product, name, short description, date added, remediation due date and ransomware use | Available (v1a) |
 | **NVD** (NIST) | How severe is it, and what are the technical details? | Official description, CVSS score and vector, publication and modification dates, reference links | Available (v1a) |
 | **EPSS** (FIRST) | How likely is it to be exploited soon? | Probability (0 to 1) of exploitation in the next 30 days, and its percentile | Available (v1a) |
-| **OSV.dev** (GitHub advisories) | Which packages and versions are affected, and which fix them? | Package advisories for Maven and npm with affected packages, version ranges and fixed versions | Data imported; screens planned (v1b) |
+| **OSV.dev** (GitHub advisories) | Which packages and versions are affected, and which fix them? | Package advisories for Maven and npm with affected packages, version ranges and fixed versions | Available (v1b) |
 
 ## How the three main numbers differ
 

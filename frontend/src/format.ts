@@ -38,3 +38,15 @@ export function safeUrl(value: string): string | null {
     return null;
   }
 }
+
+/**
+ * Describes one OSV version range as plain text without interpreting it, e.g.
+ * "introduced 2.13.0 → fixed 2.15.0". Version ordering differs between Maven and npm,
+ * so the app only repeats what the source reports.
+ */
+export function describeRange(range: { events?: Record<string, string>[] }): string {
+  const parts = (range.events ?? []).flatMap((event) =>
+    Object.entries(event).map(([kind, version]) => `${kind.replace(/_/g, " ")} ${version}`),
+  );
+  return parts.length > 0 ? parts.join(" → ") : NOT_AVAILABLE;
+}

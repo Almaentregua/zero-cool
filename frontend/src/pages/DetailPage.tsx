@@ -77,6 +77,21 @@ function Detail({ v }: { v: Awaited<ReturnType<typeof fetchVulnerability>> }) {
       {/* Plain text on purpose: the text comes from external sources. */}
       <p className="description">{formatText(v.description)}</p>
 
+      <h2>Affected packages</h2>
+      {v.advisories.length === 0 ? (
+        <p>No Maven or npm package advisory mentions this CVE.</p>
+      ) : (
+        <ul>
+          {v.advisories.map((a) => (
+            <li key={a.id}>
+              <Link to={`/advisory/${a.id}`}>{a.id}</Link> <SeverityBadge severity={a.severity} />{" "}
+              {formatText(a.summary)}
+              <div className="muted">{a.packages.map((p) => `${p.ecosystem}: ${p.name}`).join(", ")}</div>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <h2>References</h2>
       {links.length === 0 ? (
         <p>{NOT_AVAILABLE}</p>

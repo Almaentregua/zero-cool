@@ -1,7 +1,7 @@
 # Pages
 
-> Status: **available** (v1a). Open http://localhost:5173 after `make dev`.
-> Package vulnerabilities from OSV and GitHub (v1b) are not included yet.
+> Status: **available** (v1a and v1b). Open http://localhost:5173 after `make dev`.
+> The top menu switches between **Known exploited (KEV)** and **Package advisories**.
 
 ## Vulnerability list
 
@@ -59,6 +59,44 @@ clickable when they start with `http` or `https`.
 
 If the CVE is not in the database you see a message saying so.
 
+## Package advisories
+
+**Problem it solves:** find out whether the libraries you use (Java/Maven, Node.js/npm)
+have known security problems, and which version fixes them.
+
+**What you see:** a table with one row per advisory (open it from the **Package
+advisories** menu).
+
+| Field | Meaning |
+|-------|---------|
+| Advisory | The advisory id, for example `GHSA-jfh8-c2jp-5v3q` |
+| Summary | Short description |
+| Severity | Low, Medium, High or Critical, as rated by GitHub |
+| EPSS | Probability of exploitation, from the CVE; with several CVEs, the highest |
+| CVE | The related CVE ids (some advisories have none) |
+| Packages | Affected packages, with their ecosystem (Maven or npm) |
+| Published | Publication date |
+
+**Filters** (can be combined, applied with **Apply**): technology, package name (part of the
+name is enough), severity (one or more), minimum EPSS, publication dates, and whether the
+advisory has a CVE. The search box looks in the advisory id, summary, CVE ids and package
+names. Click **EPSS** or **Published** to sort.
+
+**Example:** technology `Java` + severity `Critical` + minimum EPSS `0.9` shows critical
+Java library problems that are very likely to be exploited.
+
+**Advisory detail:** click an advisory id. You see the affected packages with the versions
+affected and the versions that fix it, the CVE ids (each one is a link when that CVE is in
+the Known exploited list), the full description and the references.
+
+Important: the affected version ranges are shown exactly as the source reports them. The
+app does **not** tell you whether the version you use is affected, and it does not show
+malicious-package reports or withdrawn advisories.
+
+**From a CVE to its packages:** the detail page of a Known exploited CVE has an **Affected
+packages** section listing the advisories that mention it (most CVEs have none, because many
+are about products that are not Maven or npm packages).
+
 ## Keeping data fresh
 
 Data is not updated automatically. Run `make ingest` to refresh it (the first
@@ -69,4 +107,4 @@ run takes about 20 minutes because of NVD's request limits; later runs are fast)
 | Page | Status |
 |------|--------|
 | List and detail with KEV, NVD and EPSS data | Available (v1a) |
-| Package vulnerabilities for Maven and npm (OSV, GitHub) | Planned (v1b) |
+| Package advisories for Maven and npm (OSV, GitHub) | Available (v1b) |

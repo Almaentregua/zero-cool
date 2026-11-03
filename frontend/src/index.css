@@ -41,7 +41,13 @@ body {
 
 a { color: var(--accent); }
 main { max-width: 72rem; margin: 0 auto; padding: 1rem; }
-.site-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.75rem 1rem; }
+.site-header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0.75rem 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem 1.5rem; align-items: center; }
+.site-header nav { display: flex; gap: 1rem; }
+.site-header nav a { text-decoration: none; padding: 0.2rem 0; border-bottom: 2px solid transparent; }
+.site-header nav a.active { border-bottom-color: var(--accent); font-weight: 600; }
+.page-title { margin-bottom: 0.25rem; }
+.package-line { overflow-wrap: anywhere; }
+td.wrap { overflow-wrap: anywhere; }
 .brand { font-weight: 700; color: var(--text); text-decoration: none; }
 .muted { color: var(--muted); }
 .error { color: var(--danger); }

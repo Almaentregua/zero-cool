@@ -3,6 +3,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { cleanListParams, fetchTechnologies, fetchVulnerabilities } from "../api";
 import { SeverityBadge, YesNo } from "../components/Badges";
 import FilterBar from "../components/FilterBar";
+import Pagination from "../components/Pagination";
 import { formatDate, formatEpss, formatScore, formatText } from "../format";
 import { useFetch } from "../useFetch";
 
@@ -129,23 +130,5 @@ export default function ListPage() {
         </>
       )}
     </>
-  );
-}
-
-function Pagination(props: { page: number; pageSize: number; total: number; onChange: (page: number) => void }) {
-  const pages = Math.max(1, Math.ceil(props.total / props.pageSize));
-  if (pages === 1) return null;
-  return (
-    <nav className="pagination" aria-label="Pagination">
-      <button type="button" disabled={props.page <= 1} onClick={() => props.onChange(props.page - 1)}>
-        Previous
-      </button>
-      <span>
-        Page {props.page} of {pages}
-      </span>
-      <button type="button" disabled={props.page >= pages} onClick={() => props.onChange(props.page + 1)}>
-        Next
-      </button>
-    </nav>
   );
 }

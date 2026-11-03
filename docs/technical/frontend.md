@@ -10,8 +10,10 @@ or styling libraries (plain CSS in `src/index.css`, light and dark mode).
 | `src/format.ts` | Display helpers: missing data -> "Not available"; `safeUrl` |
 | `src/useFetch.ts` | Small hook: loads data, cancels the previous request |
 | `src/pages/ListPage.tsx` | `/` - filters, table, sorting, pagination |
-| `src/pages/DetailPage.tsx` | `/cve/:cveId` - all fields, description, references |
-| `src/components/` | `FilterBar`, severity and yes/no badges |
+| `src/pages/DetailPage.tsx` | `/cve/:cveId` - all fields, description, references, related package advisories |
+| `src/pages/AdvisoryListPage.tsx` | `/advisories` - package advisories with filters, sorting, pagination |
+| `src/pages/AdvisoryDetailPage.tsx` | `/advisory/:advisoryId` - packages with version ranges, CVEs, details, references |
+| `src/components/` | `FilterBar`, `AdvisoryFilterBar`, `Pagination`, severity and yes/no badges |
 
 ## Design decisions
 - **State lives in the URL** (`useSearchParams`): filters, sort and page can be shared,
@@ -24,6 +26,13 @@ or styling libraries (plain CSS in `src/index.css`, light and dark mode).
 - **Missing data** is `null` from the API and always displayed as "Not available".
 - **Dev proxy.** `/api` is proxied to `VITE_API_URL` (see `vite.config.ts`), so the browser
   uses one origin and no CORS configuration is needed in development.
+
+- **Two resources, linked.** KEV vulnerabilities and package advisories are separate lists
+  (see ADR 0003). The CVE page lists related advisories; an advisory links to a CVE page only
+  when the API says `in_database` (otherwise the page would not exist).
+- **Version ranges are repeated, not interpreted.** `describeRange` turns OSV events into text
+  ("introduced 2.13.0 → fixed 2.15.0"). Whether a given version is affected is not computed,
+  because Maven and npm order versions differently.
 
 ## Tests
 `make test-frontend` (Vitest + Testing Library, `fetch` is mocked; no real API calls).
