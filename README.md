@@ -38,6 +38,7 @@ never committed.
 |------|----------|---------|
 | `backend/.env.example` | `CORS_ORIGINS` | Comma separated origins allowed to call the API |
 | `backend/.env.example` | `DATABASE_PATH` | SQLite file location (default `data/zero_cool.db`) |
+| `backend/.env.example` | `TECHNOLOGIES_FILE` | Path to `technologies.yaml` (default `technologies.yaml`) |
 | `frontend/.env.example` | `VITE_API_URL` | Backend URL used by the dev proxy |
 
 ## Commands

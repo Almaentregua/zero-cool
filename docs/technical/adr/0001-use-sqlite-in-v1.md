@@ -8,8 +8,8 @@ The app needs to store normalized CVE data from several sources. v1 is a
 single-user, single-process application with no deployment requirements yet.
 
 ## Decision
-Use SQLite through Python's standard `sqlite3` module. The file location comes
-from the `DATABASE_PATH` environment variable.
+Use SQLite. The file location comes from the `DATABASE_PATH` environment
+variable. Access goes through SQLAlchemy (see ADR 0002).
 
 ## Alternatives considered
 - Postgres: more capable, but adds a server to install and operate before it is needed.
@@ -17,5 +17,4 @@ from the `DATABASE_PATH` environment variable.
 ## Consequences
 - Zero setup and trivial test databases (`tmp_path`).
 - Single writer: ingestion and API writes must not run concurrently at scale.
-- No ORM or migration tool chosen yet; add one (with its own ADR) when the schema is defined.
-- Moving to Postgres later means keeping SQL access behind a small data layer.
+- Moving to Postgres later is mostly a connection-string change thanks to SQLAlchemy.
