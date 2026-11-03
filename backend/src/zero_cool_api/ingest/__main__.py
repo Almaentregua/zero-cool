@@ -12,7 +12,12 @@ from sqlalchemy.orm import sessionmaker
 
 from zero_cool_api.db import create_db_engine, get_database_path, init_db
 from zero_cool_api.http import FetchError
-from zero_cool_api.ingest.epss import apply_epss, kev_cve_ids
+from zero_cool_api.ingest.epss import (
+    all_cve_ids,
+    apply_epss,
+    apply_epss_to_advisories,
+    kev_cve_ids,
+)
 from zero_cool_api.ingest.kev import upsert_kev
 from zero_cool_api.ingest.nvd import NvdAuthError, enrich_from_nvd
 from zero_cool_api.ingest.osv import upsert_advisories
@@ -70,10 +75,10 @@ def run_osv(engine: Engine) -> int:
 def run_epss(engine: Engine) -> int:
     """Fetch EPSS scores for every KEV vulnerability. Returns the process exit code."""
     with sessionmaker(engine)() as session:
-        ids = kev_cve_ids(session)
-        if not ids:
+        if not kev_cve_ids(session):
             print("No KEV vulnerabilities found. Run the kev ingestion first.", file=sys.stderr)
             return 1
+        ids = all_cve_ids(session)
         try:
             with httpx.Client(timeout=30.0, follow_redirects=True) as client:
                 scores = fetch_epss(client, ids)
@@ -81,7 +86,9 @@ def run_epss(engine: Engine) -> int:
             print(f"Ingestion failed: {exc}", file=sys.stderr)
             return 1
         updated, missing = apply_epss(session, scores)
-    print(f"EPSS: {updated} updated, {missing} without an EPSS score")
+        adv_updated, adv_missing = apply_epss_to_advisories(session, scores)
+    print(f"EPSS (KEV): {updated} updated, {missing} without an EPSS score")
+    print(f"EPSS (advisories): {adv_updated} updated, {adv_missing} with a CVE but no score")
     return 0
 
 

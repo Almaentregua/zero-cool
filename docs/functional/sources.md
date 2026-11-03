@@ -80,7 +80,8 @@ and npm (Node.js).
 - **Version ranges** are shown as reported. The app does not tell you whether a specific
   version of your project is affected.
 - **Not included:** reports of malicious packages, and withdrawn advisories.
-- **EPSS** will be added to advisories that have a CVE (planned in this version).
+- **EPSS** is added to advisories that have a CVE. If an advisory lists several CVEs, the
+  highest EPSS is shown. Advisories without a CVE show "Not available".
 
 ## Keeping data fresh
 

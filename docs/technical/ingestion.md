@@ -60,8 +60,9 @@ reference links. NVD's description replaces KEV's short one.
 make ingest-epss
 ```
 
-Queries FIRST's public EPSS API (no key needed) for every KEV CVE, 100 CVEs per
-request, so about 18 requests in total (a few seconds).
+Queries FIRST's public EPSS API (no key needed) for every KEV CVE **and every CVE that
+appears in a package advisory**, 100 CVEs per request. With about 1,800 KEV CVEs and about
+15,000 advisory CVEs that is roughly 150 requests (about a minute).
 
 - **Values.** `epss_score` is the probability (0 to 1) of exploitation in the next
   30 days; `epss_percentile` says how it ranks against all CVEs. The API sends them as
@@ -70,6 +71,9 @@ request, so about 18 requests in total (a few seconds).
   previous values. Run it whenever you want current numbers.
 - **Unknown CVEs.** If EPSS has no score for a CVE, the field stays empty
   ("not available") or keeps its previous value. Nothing is estimated.
+- **Advisories.** An advisory's EPSS is the **highest** score among its CVEs (the percentile
+  is the one of that CVE). Advisories with no CVE, or whose CVEs have no score, stay "not
+  available". Run `make ingest-osv` first so the advisory CVEs exist.
 - **Safety.** Only the CVE ids we asked for are accepted from the response.
 - **Failure.** If any request fails after retries, nothing is written and the
   command exits with code 1.
@@ -108,7 +112,7 @@ zip -> validate and normalize -> store in the `advisories*` tables.
 - **Retries.** Same exponential backoff as the other sources. Failures exit with code 1.
 
 First real run (2026-11-03): 7,102 Maven and 7,663 npm advisories (14,703 in total; 13,519
-with a CVE), 120 and 410 withdrawn ones skipped, 67 KEV CVEs with an advisory.
+with a CVE; 13,447 got an EPSS score, 72 CVEs have none), 120 and 410 withdrawn ones skipped, 67 KEV CVEs with an advisory.
 
 ## Everything at once
 

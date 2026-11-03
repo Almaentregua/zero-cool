@@ -3,7 +3,7 @@
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from zero_cool_api.models import Vulnerability
+from zero_cool_api.models import Advisory, AdvisoryCve, Vulnerability
 from zero_cool_api.sources.epss import EpssScore
 
 
@@ -47,3 +47,45 @@ def apply_epss(session: Session, scores: dict[str, EpssScore]) -> tuple[int, int
         updated += 1
     session.commit()
     return updated, missing
+
+
+def all_cve_ids(session: Session) -> list[str]:
+    """Return every CVE id that needs an EPSS score: KEV ones and those of advisories.
+
+    Parameters:
+        session: Open session.
+
+    Returns:
+        Distinct CVE ids in alphabetical order.
+    """
+    advisory_ids = set(session.scalars(select(AdvisoryCve.cve_id).distinct()))
+    return sorted(set(kev_cve_ids(session)) | advisory_ids)
+
+
+def apply_epss_to_advisories(session: Session, scores: dict[str, EpssScore]) -> tuple[int, int]:
+    """Store EPSS on advisories: the highest score among their CVEs.
+
+    The percentile is the one of the CVE with that highest score. An advisory whose
+    CVEs have no score (or that has no CVE) keeps what it had, usually "not available".
+
+    Parameters:
+        session: Open session; committed once at the end.
+        scores: Scores keyed by CVE id.
+
+    Returns:
+        ``(updated, without_score)``: advisories updated, and advisories with a CVE
+        but no score.
+    """
+    updated = without_score = 0
+    advisories = session.scalars(select(Advisory).join(AdvisoryCve).distinct())
+    for advisory in advisories:
+        found = [scores[c.cve_id] for c in advisory.cves if c.cve_id in scores]
+        if not found:
+            without_score += 1
+            continue
+        best = max(found, key=lambda s: s.score)
+        advisory.epss_score = best.score
+        advisory.epss_percentile = best.percentile
+        updated += 1
+    session.commit()
+    return updated, without_score
