@@ -1,6 +1,8 @@
 # Pages
 
-> Status: **planned** (v1). Examples show the intended behavior.
+> Status: **planned** (v1). The data and the API behind these pages are already
+> available (see `docs/technical/api.md`); the screens are not built yet.
+> Examples show the intended behavior.
 
 ## Vulnerability list
 

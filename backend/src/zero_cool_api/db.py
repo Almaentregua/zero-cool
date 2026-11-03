@@ -2,11 +2,12 @@
 
 import os
 from collections.abc import Iterator
+from functools import cache
 from pathlib import Path
 from typing import Any
 
 from sqlalchemy import Engine, create_engine, event
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.orm import Session
 
 from zero_cool_api.models import Base
 
@@ -55,13 +56,23 @@ def init_db(engine: Engine) -> None:
     Base.metadata.create_all(engine)
 
 
+@cache
+def get_engine() -> Engine:
+    """Return the shared engine for the configured database (created once).
+
+    Returns:
+        The process-wide engine; tables are created on first use.
+    """
+    engine = create_db_engine()
+    init_db(engine)
+    return engine
+
+
 def get_session() -> Iterator[Session]:
     """FastAPI dependency yielding a session bound to the configured database.
 
     Yields:
         A session that is closed when the request ends.
     """
-    engine = create_db_engine()
-    init_db(engine)
-    with sessionmaker(engine)() as session:
+    with Session(get_engine()) as session:
         yield session
