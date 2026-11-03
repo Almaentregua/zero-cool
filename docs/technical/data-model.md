@@ -16,7 +16,7 @@ and shown as "not available"; values are never guessed.
 | `cvss_score`, `cvss_vector`, `published_at`, `modified_at` | NVD | |
 | `nvd_fetched_at` | NVD | When NVD was last queried, even if it had no data; drives the 7-day skip |
 | `severity` | derived | From `cvss_score`: LOW <4, MEDIUM <7, HIGH <9, CRITICAL >=9 |
-| `epss_score`, `epss_percentile` | EPSS | 0 to 1 |
+| `epss_score`, `epss_percentile` | EPSS | 0 to 1; refreshed on every EPSS run |
 
 ## `references`
 `id`, `cve_id` (FK), `url`: external links per vulnerability (NVD). Only `http(s)` URLs are kept.

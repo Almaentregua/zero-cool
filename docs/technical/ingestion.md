@@ -54,6 +54,33 @@ reference links. NVD's description replaces KEV's short one.
   logged. If NVD rejects it (401/403) the run stops with a clear message.
 - **Exit code.** 1 if any CVE failed, so failures are not silent.
 
+## EPSS (v1a, step 4)
+
+```bash
+make ingest-epss
+```
+
+Queries FIRST's public EPSS API (no key needed) for every KEV CVE, 100 CVEs per
+request, so about 18 requests in total (a few seconds).
+
+- **Values.** `epss_score` is the probability (0 to 1) of exploitation in the next
+  30 days; `epss_percentile` says how it ranks against all CVEs. The API sends them as
+  text; values outside 0-1 or not numeric are discarded.
+- **Always refreshed.** EPSS is recalculated daily, so every run overwrites the
+  previous values. Run it whenever you want current numbers.
+- **Unknown CVEs.** If EPSS has no score for a CVE, the field stays empty
+  ("not available") or keeps its previous value. Nothing is estimated.
+- **Safety.** Only the CVE ids we asked for are accepted from the response.
+- **Failure.** If any request fails after retries, nothing is written and the
+  command exits with code 1.
+
+## Recommended order
+1. `make ingest-kev`
+2. `make ingest-nvd` (slow the first time)
+3. `make ingest-epss`
+
+Steps 2 and 3 are independent of each other.
+
 ## Where data goes
 `backend/data/zero_cool.db` (override with `DATABASE_PATH`). Git ignores it.
 To start from scratch, delete the file and ingest again.

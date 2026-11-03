@@ -1,4 +1,4 @@
-"""Command line entry point: ``python -m zero_cool_api.ingest kev|nvd``."""
+"""Command line entry point: ``python -m zero_cool_api.ingest kev|nvd|epss``."""
 
 import argparse
 import logging
@@ -11,8 +11,10 @@ from sqlalchemy.orm import sessionmaker
 
 from zero_cool_api.db import create_db_engine, init_db
 from zero_cool_api.http import FetchError
+from zero_cool_api.ingest.epss import apply_epss, kev_cve_ids
 from zero_cool_api.ingest.kev import upsert_kev
 from zero_cool_api.ingest.nvd import NvdAuthError, enrich_from_nvd
+from zero_cool_api.sources.epss import fetch_epss
 from zero_cool_api.sources.kev import fetch_kev
 from zero_cool_api.sources.nvd import NvdClient
 
@@ -28,6 +30,24 @@ def run_kev(engine: Engine) -> int:
     with sessionmaker(engine)() as session:
         created, updated = upsert_kev(session, entries)
     print(f"KEV: {created} created, {updated} updated ({len(entries)} entries)")
+    return 0
+
+
+def run_epss(engine: Engine) -> int:
+    """Fetch EPSS scores for every KEV vulnerability. Returns the process exit code."""
+    with sessionmaker(engine)() as session:
+        ids = kev_cve_ids(session)
+        if not ids:
+            print("No KEV vulnerabilities found. Run the kev ingestion first.", file=sys.stderr)
+            return 1
+        try:
+            with httpx.Client(timeout=30.0, follow_redirects=True) as client:
+                scores = fetch_epss(client, ids)
+        except FetchError as exc:
+            print(f"Ingestion failed: {exc}", file=sys.stderr)
+            return 1
+        updated, missing = apply_epss(session, scores)
+    print(f"EPSS: {updated} updated, {missing} without an EPSS score")
     return 0
 
 
@@ -72,7 +92,7 @@ def main(argv: list[str] | None = None) -> int:
         Process exit code: 0 on success, 1 if something failed.
     """
     parser = argparse.ArgumentParser(prog="ingest", description="Ingest vulnerability data.")
-    parser.add_argument("source", choices=["kev", "nvd"], help="Source to ingest.")
+    parser.add_argument("source", choices=["kev", "nvd", "epss"], help="Source to ingest.")
     parser.add_argument("--limit", type=int, help="nvd: query at most this many CVEs.")
     parser.add_argument("--force", action="store_true", help="nvd: ignore recently fetched data.")
     args = parser.parse_args(argv)
@@ -84,6 +104,8 @@ def main(argv: list[str] | None = None) -> int:
     init_db(engine)
     if args.source == "kev":
         return run_kev(engine)
+    if args.source == "epss":
+        return run_epss(engine)
     return run_nvd(engine, args.limit, args.force)
 
 

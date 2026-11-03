@@ -3,7 +3,7 @@
 # Load backend/.env when it exists (secrets such as NVD_API_KEY live there).
 BACKEND_ENV := $(if $(wildcard backend/.env),--env-file .env,)
 .PHONY: help setup install install-backend install-frontend dev backend frontend \
-        ingest-kev ingest-nvd test test-backend test-frontend lint format typecheck check build clean
+        ingest-kev ingest-nvd ingest-epss test test-backend test-frontend lint format typecheck check build clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -33,6 +33,9 @@ ingest-kev: ## Download the CISA KEV catalog into the local database
 
 ingest-nvd: ## Enrich KEV CVEs with NVD data (LIMIT=n to try a few, FORCE=1 to refetch)
 	cd backend && uv run $(BACKEND_ENV) python -m zero_cool_api.ingest nvd $(if $(LIMIT),--limit $(LIMIT),) $(if $(FORCE),--force,)
+
+ingest-epss: ## Add EPSS scores to the KEV CVEs
+	cd backend && uv run $(BACKEND_ENV) python -m zero_cool_api.ingest epss
 
 test: test-backend test-frontend ## Run all tests
 

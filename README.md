@@ -63,6 +63,7 @@ Run `make help` for the full list. Main targets:
 | `make setup` | Create `backend/.env` from the example |
 | `make ingest-kev` | Download CISA KEV into the local database (manual, safe to repeat) |
 | `make ingest-nvd` | Enrich KEV CVEs with NVD data (`LIMIT=5` to try, `FORCE=1` to refetch) |
+| `make ingest-epss` | Add EPSS exploitation probabilities to the KEV CVEs |
 | `make test` | Run backend (pytest) and frontend (Vitest) tests |
 | `make lint` / `make format` | Lint / format |
 | `make typecheck` | mypy (backend) and tsc (frontend) |
