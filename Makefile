@@ -1,9 +1,15 @@
 .DEFAULT_GOAL := help
-.PHONY: help install install-backend install-frontend dev backend frontend \
-        ingest-kev test test-backend test-frontend lint format typecheck check build clean
+
+# Load backend/.env when it exists (secrets such as NVD_API_KEY live there).
+BACKEND_ENV := $(if $(wildcard backend/.env),--env-file .env,)
+.PHONY: help setup install install-backend install-frontend dev backend frontend \
+        ingest-kev ingest-nvd test test-backend test-frontend lint format typecheck check build clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
+
+setup: ## Create backend/.env from the example (never overwrites an existing one)
+	@if [ -f backend/.env ]; then echo "backend/.env already exists; left untouched."; else cp backend/.env.example backend/.env && echo "Created backend/.env. Edit it to add your NVD_API_KEY (optional)."; fi
 
 install: install-backend install-frontend ## Install all dependencies
 
@@ -17,13 +23,16 @@ dev: ## Run backend and frontend together (Ctrl+C stops both)
 	$(MAKE) -j2 backend frontend
 
 backend: ## Run the API with auto-reload on :8000
-	cd backend && uv run uvicorn zero_cool_api.main:app --reload --port 8000
+	cd backend && uv run $(BACKEND_ENV) uvicorn zero_cool_api.main:app --reload --port 8000
 
 frontend: ## Run the Vite dev server on :5173
 	cd frontend && npm run dev
 
 ingest-kev: ## Download the CISA KEV catalog into the local database
-	cd backend && uv run python -m zero_cool_api.ingest kev
+	cd backend && uv run $(BACKEND_ENV) python -m zero_cool_api.ingest kev
+
+ingest-nvd: ## Enrich KEV CVEs with NVD data (LIMIT=n to try a few, FORCE=1 to refetch)
+	cd backend && uv run $(BACKEND_ENV) python -m zero_cool_api.ingest nvd $(if $(LIMIT),--limit $(LIMIT),) $(if $(FORCE),--force,)
 
 test: test-backend test-frontend ## Run all tests
 

@@ -42,6 +42,7 @@ class Vulnerability(Base):
     severity: Mapped[str | None]  # LOW / MEDIUM / HIGH / CRITICAL, derived from cvss_score
     published_at: Mapped[datetime | None]
     modified_at: Mapped[datetime | None]
+    nvd_fetched_at: Mapped[datetime | None]  # when NVD was last queried (even if it had no data)
 
     # EPSS
     epss_score: Mapped[float | None]

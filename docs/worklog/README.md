@@ -6,4 +6,4 @@ the end of that day's file.
 ## Current state
 - Working: nothing yet
 - In progress: project setup
-- Next steps: NVD client for KEV CVEs, then EPSS
+- Next steps: EPSS client, then ingest command

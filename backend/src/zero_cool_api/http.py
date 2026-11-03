@@ -14,7 +14,15 @@ MAX_BACKOFF_SECONDS = 60.0
 
 
 class FetchError(Exception):
-    """Raised when an external request fails after all retries."""
+    """Raised when an external request fails after all retries.
+
+    Attributes:
+        status_code: HTTP status of the failing response, if there was one.
+    """
+
+    def __init__(self, message: str, status_code: int | None = None) -> None:
+        super().__init__(message)
+        self.status_code = status_code
 
 
 def get_json(
@@ -64,7 +72,9 @@ def get_json(
                 if retry_after.isdigit():
                     wait = min(float(retry_after), MAX_BACKOFF_SECONDS)
             elif response.is_error:
-                raise FetchError(f"GET {url} failed: HTTP {response.status_code}")
+                raise FetchError(
+                    f"GET {url} failed: HTTP {response.status_code}", response.status_code
+                )
             else:
                 try:
                     return response.json()
