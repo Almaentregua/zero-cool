@@ -1,13 +1,14 @@
 """Building the vulnerability list query from the user's filters."""
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
 from datetime import date
 from typing import Literal
 
 from sqlalchemy import ColumnElement, and_, func, or_, select
-from sqlalchemy.orm import InstrumentedAttribute, Session
+from sqlalchemy.orm import InstrumentedAttribute, Session, selectinload
 
-from zero_cool_api.models import Vulnerability
+from zero_cool_api.models import Advisory, AdvisoryCve, AdvisoryPackage, Vulnerability
 from zero_cool_api.technologies import Product, Technology
 
 SortField = Literal["date_added", "cvss", "epss"]
@@ -148,3 +149,131 @@ def technologies_for(vuln: Vulnerability, technologies: list[Technology]) -> lis
         for t in technologies
         if any((p.vendor.lower(), p.product.lower()) == key for p in t.products)
     ]
+
+
+AdvisorySortField = Literal["published", "epss"]
+
+
+@dataclass
+class AdvisoryFilters:
+    """Filters of the advisory list; ``None``/empty means "no filter"."""
+
+    ecosystems: list[str] | None = None  # expanded from the technology filter
+    package: str | None = None
+    severities: list[str] = field(default_factory=list)
+    min_epss: float | None = None
+    published_from: date | None = None
+    published_to: date | None = None
+    has_cve: bool | None = None
+    q: str | None = None
+
+
+def build_advisory_conditions(filters: AdvisoryFilters) -> list[ColumnElement[bool]]:
+    """Translate advisory filters into SQL conditions (bound parameters only).
+
+    Parameters:
+        filters: The user's filters.
+
+    Returns:
+        Conditions to be combined with AND.
+    """
+    a = Advisory
+    conditions: list[ColumnElement[bool]] = []
+    if filters.ecosystems is not None:
+        # A technology without ecosystems matches nothing, hence the empty IN.
+        lowered = [e.lower() for e in filters.ecosystems]
+        conditions.append(
+            a.id.in_(
+                select(AdvisoryPackage.advisory_id).where(
+                    func.lower(AdvisoryPackage.ecosystem).in_(lowered)
+                )
+            )
+        )
+    if filters.package:
+        conditions.append(
+            a.id.in_(
+                select(AdvisoryPackage.advisory_id).where(
+                    _contains(AdvisoryPackage.name, filters.package)
+                )
+            )
+        )
+    if filters.severities:
+        conditions.append(a.severity.in_(filters.severities))
+    if filters.min_epss is not None:
+        conditions.append(a.epss_score >= filters.min_epss)
+    if filters.published_from is not None:
+        conditions.append(func.date(a.published_at) >= filters.published_from.isoformat())
+    if filters.published_to is not None:
+        conditions.append(func.date(a.published_at) <= filters.published_to.isoformat())
+    if filters.has_cve is not None:
+        with_cve = a.id.in_(select(AdvisoryCve.advisory_id))
+        conditions.append(with_cve if filters.has_cve else ~with_cve)
+    if filters.q:
+        conditions.append(
+            or_(
+                _contains(a.id, filters.q),
+                _contains(a.summary, filters.q),
+                a.id.in_(
+                    select(AdvisoryCve.advisory_id).where(_contains(AdvisoryCve.cve_id, filters.q))
+                ),
+                a.id.in_(
+                    select(AdvisoryPackage.advisory_id).where(
+                        _contains(AdvisoryPackage.name, filters.q)
+                    )
+                ),
+            )
+        )
+    return conditions
+
+
+def search_advisories(
+    session: Session,
+    filters: AdvisoryFilters,
+    *,
+    sort: AdvisorySortField = "published",
+    order: SortOrder = "desc",
+    page: int = 1,
+    page_size: int = 25,
+) -> tuple[list[Advisory], int]:
+    """Run the advisory list query.
+
+    Parameters:
+        session: Open session.
+        filters: Filters to apply.
+        sort: ``published`` or ``epss``. Rows without a value always go last.
+        order: ``asc`` or ``desc``.
+        page: 1-based page number.
+        page_size: Rows per page.
+
+    Returns:
+        ``(rows of the page, total number of matching rows)``.
+    """
+    conditions = build_advisory_conditions(filters)
+    total = session.scalar(select(func.count()).select_from(Advisory).where(*conditions)) or 0
+    column = Advisory.published_at if sort == "published" else Advisory.epss_score
+    ordering = column.desc() if order == "desc" else column.asc()
+    rows = session.scalars(
+        select(Advisory)
+        .where(*conditions)
+        .options(selectinload(Advisory.cves), selectinload(Advisory.packages))
+        .order_by(ordering.nulls_last(), Advisory.id)
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    ).all()
+    return list(rows), total
+
+
+def technologies_for_ecosystems(
+    ecosystems: Iterable[str], technologies: list[Technology]
+) -> list[str]:
+    """Names of the tracked technologies that cover any of the given OSV ecosystems.
+
+    Parameters:
+        ecosystems: Ecosystems of an advisory's packages (for example ``Maven``).
+        technologies: Technologies from ``technologies.yaml``.
+
+    Returns:
+        Technology names, in file order.
+    """
+    wanted = {e.lower() for e in ecosystems}
+    return [t.name for t in technologies if wanted & {e.lower() for e in t.osv_ecosystems}]

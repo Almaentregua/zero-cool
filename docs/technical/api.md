@@ -50,10 +50,49 @@ The id is case-insensitive. **404** if the CVE is not in the database,
 Technologies from `technologies.yaml`: `name`, `osv_ecosystems`, and `products`
 (as `"Vendor / Product"`). Use `name` for the `technology` filter.
 
+## `GET /api/advisories`
+Package advisories (GitHub Advisory Database via OSV) for the ecosystems in
+`technologies.yaml`. All parameters are optional and combine with AND.
+
+| Parameter | Type | Meaning |
+|-----------|------|---------|
+| `technology` | text, repeatable | Name from `/api/technologies`; matches advisories affecting that technology's `osv_ecosystems`. Unknown name returns 422. A technology without ecosystems matches nothing |
+| `package` | text | Package name contains, case-insensitive |
+| `severity` | `LOW` `MEDIUM` `HIGH` `CRITICAL`, repeatable | |
+| `min_epss` | 0-1 | Advisory EPSS at least this (highest of its CVEs). Advisories without a score are excluded |
+| `published_from`, `published_to` | date | Inclusive. Inverted range returns 422 |
+| `has_cve` | boolean | `true`: has a CVE. `false`: has none |
+| `q` | text (max 200) | Searches the advisory id, summary, CVE ids and package names. `%` and `_` are literal |
+| `sort` | `published` (default), `epss` | Rows without a value always come last |
+| `order` | `desc` (default), `asc` | |
+| `page`, `page_size` | int | Page from 1; size 1-100, default 25 |
+
+Response: `{items, total, page, page_size}`. Each item: `id`, `summary`, `severity`,
+`epss_score`, `epss_percentile`, `published_at`, `github_reviewed`, `cves`, `packages`
+(`ecosystem`, `name`), `technologies`.
+
+Examples:
+```
+/api/advisories?technology=Java&severity=CRITICAL&min_epss=0.9&sort=epss
+/api/advisories?has_cve=false
+/api/advisories?q=log4j-core
+```
+
+## `GET /api/advisories/{advisory_id}`
+Full detail: everything above plus `details` (Markdown from the source: render as plain
+text), `cvss_vector`, `modified_at`, `references`, `cves` (each with `in_database`: true when
+that CVE has a page under `/api/vulnerabilities/{cve_id}`) and `packages`, each with
+`fixed_versions` and `ranges` (OSV ranges, **not interpreted**). The id is case-insensitive.
+**404** if unknown, **422** if it is not a `GHSA-xxxx-xxxx-xxxx` id.
+
+## Advisories on a CVE
+`GET /api/vulnerabilities/{cve_id}` also returns `advisories`: the package advisories that
+mention that CVE (`id`, `summary`, `severity`, `packages`). Empty when there are none (most KEV CVEs).
+
 ## Implementation notes
-- Routes: `backend/src/zero_cool_api/api/routes.py`; response models: `api/schemas.py`;
-  filter and sort logic: `queries.py`.
+- Routes: `api/routes.py` (KEV vulnerabilities, technologies) and `api/advisories.py`; shared
+  dependencies: `api/deps.py`; response models: `api/schemas.py`; filter and sort logic: `queries.py`.
 - All values reach SQL as bound parameters (no SQL injection).
 - A technology filter expands to its vendor/product pairs from `technologies.yaml`
   (see [technologies](technologies.md)).
-- Package vulnerabilities from OSV and GitHub (v1b) will appear in the same endpoints.
+- Advisories are a separate resource from KEV vulnerabilities (see ADR 0003); they are linked by CVE id.

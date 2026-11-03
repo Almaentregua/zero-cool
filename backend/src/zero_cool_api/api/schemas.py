@@ -5,6 +5,7 @@ source. They are never replaced by zero or placeholder text.
 """
 
 from datetime import date, datetime
+from typing import Any
 
 from pydantic import BaseModel, Field
 
@@ -47,6 +48,10 @@ class VulnerabilityDetail(VulnerabilitySummary):
     modified_at: datetime | None
     kev_due_date: date | None = Field(description="CISA remediation due date.")
     references: list[str] = Field(description="External links (http/https only).")
+    advisories: list["AdvisoryLink"] = Field(
+        default_factory=list,
+        description="Package advisories (Maven, npm) that mention this CVE; may be empty.",
+    )
 
 
 class VulnerabilityPage(BaseModel):
@@ -67,3 +72,86 @@ class TechnologyOut(BaseModel):
         description="Vendor/product pairs it covers, as 'Vendor / Product'.",
         examples=[["Apache / Log4j2"]],
     )
+
+
+class PackageRef(BaseModel):
+    """A package named by an advisory (list view)."""
+
+    ecosystem: str = Field(examples=["Maven"])
+    name: str = Field(examples=["org.apache.logging.log4j:log4j-core"])
+
+
+class AdvisorySummary(BaseModel):
+    """A package advisory as shown in the list."""
+
+    id: str = Field(examples=["GHSA-jfh8-c2jp-5v3q"])
+    summary: str | None
+    severity: str | None = Field(
+        description="LOW, MEDIUM, HIGH or CRITICAL.", examples=["CRITICAL"]
+    )
+    epss_score: float | None = Field(
+        description="Highest EPSS among the advisory's CVEs; null if it has no CVE or no score."
+    )
+    epss_percentile: float | None
+    published_at: datetime | None
+    github_reviewed: bool | None
+    cves: list[str] = Field(description="CVE ids of the advisory; may be empty.")
+    packages: list[PackageRef]
+    technologies: list[str] = Field(description="Tracked technologies covering its ecosystems.")
+
+
+class AdvisoryPackage(BaseModel):
+    """A package affected by an advisory (detail view)."""
+
+    ecosystem: str
+    name: str
+    fixed_versions: list[str] = Field(description="Versions that fix the advisory; may be empty.")
+    ranges: list[dict[str, Any]] = Field(
+        description="Version ranges exactly as OSV reports them (not interpreted)."
+    )
+
+
+class AdvisoryCveRef(BaseModel):
+    """A CVE of an advisory and whether this app has a page for it."""
+
+    cve_id: str
+    in_database: bool = Field(
+        description="True if the CVE is in the KEV list, so /api/vulnerabilities/{cve_id} exists."
+    )
+
+
+class AdvisoryDetail(BaseModel):
+    """Full information of one advisory."""
+
+    id: str
+    summary: str | None
+    details: str | None = Field(description="Markdown from the source. Render it as plain text.")
+    severity: str | None
+    cvss_vector: str | None = Field(description="The numeric score is not available from OSV.")
+    epss_score: float | None
+    epss_percentile: float | None
+    published_at: datetime | None
+    modified_at: datetime | None
+    github_reviewed: bool | None
+    technologies: list[str]
+    cves: list[AdvisoryCveRef]
+    packages: list[AdvisoryPackage]
+    references: list[str] = Field(description="External links (http/https only).")
+
+
+class AdvisoryPage(BaseModel):
+    """One page of the advisory list."""
+
+    items: list[AdvisorySummary]
+    total: int
+    page: int
+    page_size: int
+
+
+class AdvisoryLink(BaseModel):
+    """An advisory related to a KEV vulnerability."""
+
+    id: str
+    summary: str | None
+    severity: str | None
+    packages: list[PackageRef]

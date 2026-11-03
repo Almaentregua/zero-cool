@@ -8,7 +8,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy.orm import Session
 
-from zero_cool_api.api.routes import get_technologies
+from zero_cool_api.api.deps import get_technologies
 from zero_cool_api.db import create_db_engine, get_session, init_db
 from zero_cool_api.main import app
 from zero_cool_api.models import Reference, Vulnerability

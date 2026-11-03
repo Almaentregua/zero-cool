@@ -10,4 +10,9 @@
 - **OSV / GitHub Advisories**: databases of vulnerabilities in software packages.
 - **Ecosystem**: package world a library belongs to, e.g. Maven (Java) or npm (Node.js).
 - **Vendor / product**: who makes the software and its name, e.g. vendor `apache`, product `log4j`.
+- **Advisory**: a security notice about a software package, identified by its own id (for example `GHSA-jfh8-c2jp-5v3q`). It may or may not have a CVE.
+- **GHSA**: the id format of GitHub's security advisories.
+- **Package**: a library published in an ecosystem, such as `org.apache.logging.log4j:log4j-core` in Maven.
+- **Fixed version**: a version of a package in which the problem is solved.
+- **Withdrawn advisory**: an advisory its authors later retracted. The app does not show them.
 - **CPE**: standard text identifying a product and version.

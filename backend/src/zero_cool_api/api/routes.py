@@ -1,20 +1,22 @@
 """Endpoints for vulnerabilities and technologies."""
 
 from datetime import date
-from functools import cache
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy.orm import Session
+from fastapi import APIRouter, HTTPException, Query
+from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
+from zero_cool_api.api.deps import SessionDep, TechnologiesDep
 from zero_cool_api.api.schemas import (
+    AdvisoryLink,
+    PackageRef,
     TechnologyOut,
     VulnerabilityDetail,
     VulnerabilityPage,
     VulnerabilitySummary,
 )
-from zero_cool_api.db import get_session
-from zero_cool_api.models import Vulnerability
+from zero_cool_api.models import Advisory, AdvisoryCve, Vulnerability
 from zero_cool_api.queries import (
     SortField,
     SortOrder,
@@ -23,26 +25,16 @@ from zero_cool_api.queries import (
     technologies_for,
 )
 from zero_cool_api.sources.kev import CVE_RE
-from zero_cool_api.technologies import Technology, load_technologies
+from zero_cool_api.technologies import Technology
 
 router = APIRouter(prefix="/api")
 
 Severity = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 
 
-@cache
-def get_technologies() -> list[Technology]:
-    """FastAPI dependency: technologies from ``technologies.yaml`` (read once)."""
-    return load_technologies()
-
-
-SessionDep = Annotated[Session, Depends(get_session)]
-TechnologiesDep = Annotated[list[Technology], Depends(get_technologies)]
-
-
 def _values(vuln: Vulnerability, model: type[VulnerabilitySummary]) -> dict[str, object]:
     """Copy the plain columns a response model asks for from the database row."""
-    computed = {"technologies", "references"}
+    computed = {"technologies", "references", "advisories"}
     return {name: getattr(vuln, name) for name in model.model_fields if name not in computed}
 
 
@@ -204,8 +196,24 @@ def get_vulnerability(
     vuln = session.get(Vulnerability, normalized)
     if vuln is None:
         raise HTTPException(404, f"{normalized} not found")
+    advisories = session.scalars(
+        select(Advisory)
+        .join(AdvisoryCve)
+        .where(AdvisoryCve.cve_id == normalized)
+        .options(selectinload(Advisory.packages))
+        .order_by(Advisory.id)
+    ).all()
     return VulnerabilityDetail(
         **_values(vuln, VulnerabilityDetail),  # type: ignore[arg-type]
         technologies=technologies_for(vuln, technologies),
         references=[r.url for r in vuln.references],
+        advisories=[
+            AdvisoryLink(
+                id=a.id,
+                summary=a.summary,
+                severity=a.severity,
+                packages=[PackageRef(ecosystem=p.ecosystem, name=p.name) for p in a.packages],
+            )
+            for a in advisories
+        ],
     )
