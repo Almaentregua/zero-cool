@@ -12,16 +12,17 @@ Alcance v1: [definir]. Fuera de alcance por ahora: [ej. alertas, usuarios, login
 # Stack tecnológico
 
 * Backend: Python con uv (gestión de dependencias y entorno), API con FastAPI.
-* Base de datos: [SQLite en v1 / Postgres]
+* Base de datos: SQLite en v1 (ver `docs/technical/adr/0001-use-sqlite-in-v1.md`)
 * Frontend: web que consume la API. React + Vite + TypeScript
 * Calidad: ruff (lint y format), pytest (tests), mypy o pyright (tipos).
 
 # Comandos
 
-* Instalar: `uv sync`
-* Correr API: [comando]
-* Tests: `uv run pytest`
-* Lint y formato: `uv run ruff check . && uv run ruff format .`
+* Instalar: `make install`
+* Correr API: `make backend` (front: `make frontend`, ambos: `make dev`)
+* Tests: `make test` (backend y frontend con Vitest)
+* Lint y formato: `make lint` y `make format`
+* Verificación completa antes de terminar: `make check`
 
 # Fuentes de información
 
