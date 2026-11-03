@@ -61,6 +61,7 @@ Run `make help` for the full list. Main targets:
 | `make dev` | Run backend and frontend together |
 | `make backend` / `make frontend` | Run one side only |
 | `make setup` | Create `backend/.env` from the example |
+| `make ingest` | Run all ingestions in order (KEV, EPSS, NVD). Stops at the first failure |
 | `make ingest-kev` | Download CISA KEV into the local database (manual, safe to repeat) |
 | `make ingest-nvd` | Enrich KEV CVEs with NVD data (`LIMIT=5` to try, `FORCE=1` to refetch) |
 | `make ingest-epss` | Add EPSS exploitation probabilities to the KEV CVEs |

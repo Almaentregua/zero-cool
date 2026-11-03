@@ -3,7 +3,7 @@
 # Load backend/.env when it exists (secrets such as NVD_API_KEY live there).
 BACKEND_ENV := $(if $(wildcard backend/.env),--env-file .env,)
 .PHONY: help setup install install-backend install-frontend dev backend frontend \
-        ingest-kev ingest-nvd ingest-epss test test-backend test-frontend lint format typecheck check build clean
+        ingest ingest-kev ingest-nvd ingest-epss test test-backend test-frontend lint format typecheck check build clean
 
 help: ## Show this help
 	@grep -E '^[a-zA-Z_-]+:.*?## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  \033[36m%-18s\033[0m %s\n", $$1, $$2}'
@@ -27,6 +27,8 @@ backend: ## Run the API with auto-reload on :8000
 
 frontend: ## Run the Vite dev server on :5173
 	cd frontend && npm run dev
+
+ingest: ingest-kev ingest-epss ingest-nvd ## Run every ingestion in order: KEV, EPSS, then NVD (slow)
 
 ingest-kev: ## Download the CISA KEV catalog into the local database
 	cd backend && uv run $(BACKEND_ENV) python -m zero_cool_api.ingest kev

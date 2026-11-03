@@ -46,6 +46,11 @@ and which sources reported it (CISA KEV, NVD, EPSS, OSV, GitHub).
 
 External text is always shown as plain text for safety.
 
+## Keeping data fresh
+
+Data is not updated automatically. Run `make ingest` to refresh it (the first
+run takes about 20 minutes because of NVD's request limits; later runs are fast).
+
 ## Planned availability
 
 | Page | Version |

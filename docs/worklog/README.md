@@ -6,4 +6,4 @@ the end of that day's file.
 ## Current state
 - Working: nothing yet
 - In progress: project setup
-- Next steps: single ingest command, API endpoints, frontend
+- Next steps: API endpoints (list, detail, technologies), frontend

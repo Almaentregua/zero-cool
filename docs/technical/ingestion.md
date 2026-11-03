@@ -74,12 +74,21 @@ request, so about 18 requests in total (a few seconds).
 - **Failure.** If any request fails after retries, nothing is written and the
   command exits with code 1.
 
-## Recommended order
-1. `make ingest-kev`
-2. `make ingest-nvd` (slow the first time)
-3. `make ingest-epss`
+## Everything at once
 
-Steps 2 and 3 are independent of each other.
+```bash
+make ingest
+```
+
+Runs `ingest-kev`, `ingest-epss` and `ingest-nvd` in that order and stops at
+the first failure. EPSS runs before NVD on purpose: it takes seconds, while the
+first NVD run takes ~20 minutes (with a key). If NVD is interrupted, KEV and EPSS
+data are already stored and re-running `make ingest` resumes NVD where it stopped.
+After the first run, `make ingest` is quick because NVD skips CVEs fetched in the
+last 7 days.
+
+You can still run each step on its own (`make ingest-kev`, `make ingest-epss`,
+`make ingest-nvd`). KEV must come first on an empty database.
 
 ## Where data goes
 `backend/data/zero_cool.db` (override with `DATABASE_PATH`). Git ignores it.
