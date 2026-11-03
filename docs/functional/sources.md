@@ -11,8 +11,7 @@ different question about the same vulnerability (CVE).
 | **CISA KEV** | Is it already being exploited in real attacks? | The list of exploited CVEs, with vendor, product, name, short description, date added, remediation due date and ransomware use | Available (v1a) |
 | **NVD** (NIST) | How severe is it, and what are the technical details? | Official description, CVSS score and vector, publication and modification dates, reference links | Available (v1a) |
 | **EPSS** (FIRST) | How likely is it to be exploited soon? | Probability (0 to 1) of exploitation in the next 30 days, and its percentile | Available (v1a) |
-| **OSV.dev** | Which package versions are affected, and which fix them? | Vulnerabilities in packages (Maven and npm), with affected and fixed versions | Planned (v1b) |
-| **GitHub Security Advisories** | Same question, from GitHub's advisory database | Security advisories for the same ecosystems | Planned (v1b) |
+| **OSV.dev** (GitHub advisories) | Which packages and versions are affected, and which fix them? | Package advisories for Maven and npm with affected packages, version ranges and fixed versions | Data imported; screens planned (v1b) |
 
 ## How the three main numbers differ
 
@@ -62,12 +61,26 @@ EPSS 1% is severe on paper but unlikely to be seen in practice.
   how the CVE ranks against all others (a percentile of 0.9 means higher than 90%
   of CVEs).
 
-## OSV.dev and GitHub Security Advisories (planned)
+## OSV.dev and GitHub advisories
 
-KEV, NVD and EPSS describe **the CVE**, the vulnerability in the abstract. OSV and
-GitHub describe **which package and which version** is affected, for Maven (Java)
-and npm (Node.js). Not every package advisory has a CVE, so how to link both worlds
-will be decided when v1b is planned.
+KEV, NVD and EPSS describe **the CVE**, the vulnerability in the abstract. Package
+advisories describe **which package and which version** is affected, for Maven (Java)
+and npm (Node.js).
+
+- **One source in practice.** OSV republishes GitHub's security advisories for these
+  ecosystems, so the app reads them from OSV only. Using the GitHub API as well would
+  return the same advisories.
+- **Not every advisory has a CVE.** About 8% do not. That is why advisories are kept in
+  their own list, identified by their own id (for example `GHSA-jfh8-c2jp-5v3q`).
+- **Volume.** About 14,700 advisories, compared with about 1,800 KEV vulnerabilities. Few
+  of them are in KEV (67 CVEs), which is normal: KEV only lists what is known to be
+  exploited.
+- **Severity** is GitHub's level (Low, Medium, High, Critical). Only the CVSS vector is
+  available, not the numeric score, and the app does not calculate one.
+- **Version ranges** are shown as reported. The app does not tell you whether a specific
+  version of your project is affected.
+- **Not included:** reports of malicious packages, and withdrawn advisories.
+- **EPSS** will be added to advisories that have a CVE (planned in this version).
 
 ## Keeping data fresh
 

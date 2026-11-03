@@ -15,7 +15,7 @@ in the KEV catalog or in the app after ingestion.
 ```yaml
 technologies:
   - name: Java                 # shown in the technology filter (unique, case-insensitive)
-    osv_ecosystems: [Maven]    # OSV / GitHub ecosystems (used in v1b)
+    osv_ecosystems: [Maven]    # OSV ecosystem names; `make ingest-osv` imports their advisories
     products:                  # vendor/product pairs exactly as written in KEV
       - {vendor: Apache, product: Log4j2}
 ```

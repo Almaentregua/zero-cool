@@ -5,5 +5,5 @@ the end of that day's file.
 
 ## Current state
 - Working: v1a end to end (KEV, NVD, EPSS ingestion, API, list and detail pages)
-- In progress: v1b (package advisories from OSV), step 1 done
-- Next steps: OSV ingestion (ETag cache, safe zip reading), EPSS for advisories, API, frontend
+- In progress: v1b (package advisories from OSV), steps 1-2 done
+- Next steps: EPSS for advisories, advisory API endpoints, frontend

@@ -3,6 +3,7 @@
 import logging
 import time
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -83,5 +84,85 @@ def get_json(
         if attempt < max_retries:
             logger.warning("GET %s failed (%s); retrying in %.1fs", url, last_error, wait)
             sleep(wait)
+            delay = min(delay * 2, MAX_BACKOFF_SECONDS)
+    raise FetchError(f"GET {url} failed after {max_retries + 1} attempts: {last_error}")
+
+
+def download_if_changed(
+    client: httpx.Client,
+    url: str,
+    dest: Path,
+    *,
+    max_bytes: int = 1_000_000_000,
+    max_retries: int = 4,
+    backoff_seconds: float = 1.0,
+    sleep: Callable[[float], None] = time.sleep,
+) -> bool:
+    """Download a large file unless the server says it has not changed.
+
+    The server's ``ETag`` is kept next to the file (``<dest>.etag``) and sent back
+    as ``If-None-Match``, so an unchanged file is not downloaded again. The data is
+    written to a temporary file and renamed only when complete, so a failed
+    download never leaves a partial file in place. Retries like :func:`get_json`.
+
+    Parameters:
+        client: HTTP client.
+        url: Absolute URL.
+        dest: Where to keep the file (parent directories are created).
+        max_bytes: Abort if the download grows beyond this size.
+        max_retries: Retries after the first attempt.
+        backoff_seconds: Initial wait between attempts, doubled each time.
+        sleep: Function used to wait; injectable for tests.
+
+    Returns:
+        ``True`` if a new file was downloaded, ``False`` if the cached one is current.
+
+    Raises:
+        FetchError: On a non-retryable error status, a file larger than
+            ``max_bytes``, or when every attempt failed.
+    """
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    etag_path = dest.with_name(dest.name + ".etag")
+    tmp_path = dest.with_name(dest.name + ".part")
+    delay = backoff_seconds
+    last_error = "unknown error"
+    for attempt in range(max_retries + 1):
+        headers: dict[str, str] = {}
+        if dest.exists() and etag_path.exists():
+            headers["If-None-Match"] = etag_path.read_text(encoding="utf-8").strip()
+        try:
+            with client.stream("GET", url, headers=headers) as response:
+                if response.status_code == 304:
+                    return False
+                if response.status_code in RETRYABLE_STATUS:
+                    last_error = f"HTTP {response.status_code}"
+                elif response.is_error:
+                    raise FetchError(
+                        f"GET {url} failed: HTTP {response.status_code}", response.status_code
+                    )
+                else:
+                    size = 0
+                    with tmp_path.open("wb") as out:
+                        for chunk in response.iter_bytes(1024 * 1024):
+                            size += len(chunk)
+                            if size > max_bytes:
+                                raise FetchError(f"GET {url} exceeds {max_bytes} bytes")
+                            out.write(chunk)
+                    tmp_path.replace(dest)
+                    etag = response.headers.get("ETag")
+                    if etag:
+                        etag_path.write_text(etag, encoding="utf-8")
+                    else:
+                        etag_path.unlink(missing_ok=True)
+                    return True
+        except httpx.TransportError as exc:
+            last_error = f"network error: {type(exc).__name__}"
+        except FetchError:
+            tmp_path.unlink(missing_ok=True)
+            raise
+        tmp_path.unlink(missing_ok=True)
+        if attempt < max_retries:
+            logger.warning("GET %s failed (%s); retrying in %.1fs", url, last_error, delay)
+            sleep(delay)
             delay = min(delay * 2, MAX_BACKOFF_SECONDS)
     raise FetchError(f"GET {url} failed after {max_retries + 1} attempts: {last_error}")

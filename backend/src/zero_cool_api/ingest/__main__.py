@@ -1,22 +1,26 @@
-"""Command line entry point: ``python -m zero_cool_api.ingest kev|nvd|epss``."""
+"""Command line entry point: ``python -m zero_cool_api.ingest kev|nvd|epss|osv``."""
 
 import argparse
 import logging
 import os
 import sys
+import zipfile
 
 import httpx
 from sqlalchemy import Engine
 from sqlalchemy.orm import sessionmaker
 
-from zero_cool_api.db import create_db_engine, init_db
+from zero_cool_api.db import create_db_engine, get_database_path, init_db
 from zero_cool_api.http import FetchError
 from zero_cool_api.ingest.epss import apply_epss, kev_cve_ids
 from zero_cool_api.ingest.kev import upsert_kev
 from zero_cool_api.ingest.nvd import NvdAuthError, enrich_from_nvd
+from zero_cool_api.ingest.osv import upsert_advisories
 from zero_cool_api.sources.epss import fetch_epss
 from zero_cool_api.sources.kev import fetch_kev
 from zero_cool_api.sources.nvd import NvdClient
+from zero_cool_api.sources.osv import download_dump, iter_advisories
+from zero_cool_api.technologies import TechnologiesError, load_technologies
 
 
 def run_kev(engine: Engine) -> int:
@@ -30,6 +34,36 @@ def run_kev(engine: Engine) -> int:
     with sessionmaker(engine)() as session:
         created, updated = upsert_kev(session, entries)
     print(f"KEV: {created} created, {updated} updated ({len(entries)} entries)")
+    return 0
+
+
+def run_osv(engine: Engine) -> int:
+    """Import GitHub advisories from the OSV dumps. Returns the process exit code."""
+    try:
+        technologies = load_technologies()
+    except TechnologiesError as exc:
+        print(f"Ingestion failed: {exc}", file=sys.stderr)
+        return 1
+    ecosystems = sorted({e for t in technologies for e in t.osv_ecosystems})
+    if not ecosystems:
+        print("No osv_ecosystems defined in technologies.yaml.", file=sys.stderr)
+        return 1
+    cache_dir = get_database_path().parent / "cache"
+    wanted = set(ecosystems)
+    try:
+        with httpx.Client(timeout=60.0, follow_redirects=True) as client:
+            for ecosystem in ecosystems:
+                path, changed = download_dump(client, ecosystem, cache_dir)
+                print(f"OSV {ecosystem}: {'downloaded' if changed else 'cache is up to date'}")
+                with sessionmaker(engine)() as session:
+                    result = upsert_advisories(session, iter_advisories(path, wanted))
+                print(
+                    f"OSV {ecosystem}: {result.created} created, {result.updated} updated, "
+                    f"{result.unchanged} unchanged, {result.removed} withdrawn removed"
+                )
+    except (FetchError, zipfile.BadZipFile, ValueError) as exc:
+        print(f"Ingestion failed: {exc}", file=sys.stderr)
+        return 1
     return 0
 
 
@@ -92,7 +126,7 @@ def main(argv: list[str] | None = None) -> int:
         Process exit code: 0 on success, 1 if something failed.
     """
     parser = argparse.ArgumentParser(prog="ingest", description="Ingest vulnerability data.")
-    parser.add_argument("source", choices=["kev", "nvd", "epss"], help="Source to ingest.")
+    parser.add_argument("source", choices=["kev", "nvd", "epss", "osv"], help="Source to ingest.")
     parser.add_argument("--limit", type=int, help="nvd: query at most this many CVEs.")
     parser.add_argument("--force", action="store_true", help="nvd: ignore recently fetched data.")
     args = parser.parse_args(argv)
@@ -104,6 +138,8 @@ def main(argv: list[str] | None = None) -> int:
     init_db(engine)
     if args.source == "kev":
         return run_kev(engine)
+    if args.source == "osv":
+        return run_osv(engine)
     if args.source == "epss":
         return run_epss(engine)
     return run_nvd(engine, args.limit, args.force)

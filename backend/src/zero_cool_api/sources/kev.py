@@ -18,7 +18,7 @@ MAX_TEXT_LENGTH = 5000
 logger = logging.getLogger(__name__)
 
 
-def clean_text(value: str | None) -> str | None:
+def clean_text(value: str | None, max_length: int = MAX_TEXT_LENGTH) -> str | None:
     """Sanitize untrusted text: strip control characters and bound its length.
 
     HTML is not interpreted or removed here; the frontend must render it as
@@ -26,6 +26,7 @@ def clean_text(value: str | None) -> str | None:
 
     Parameters:
         value: Raw text from an external source.
+        max_length: Longest text to keep; the rest is cut off.
 
     Returns:
         The cleaned text, or ``None`` if the input is ``None`` or blank.
@@ -33,7 +34,7 @@ def clean_text(value: str | None) -> str | None:
     if value is None:
         return None
     cleaned = _CONTROL_CHARS.sub("", value).strip()
-    return cleaned[:MAX_TEXT_LENGTH] or None
+    return cleaned[:max_length] or None
 
 
 class KevEntry(BaseModel):

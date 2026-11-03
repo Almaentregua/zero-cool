@@ -74,21 +74,57 @@ request, so about 18 requests in total (a few seconds).
 - **Failure.** If any request fails after retries, nothing is written and the
   command exits with code 1.
 
+## Package advisories from OSV (v1b, step 2)
+
+```bash
+make ingest-osv
+```
+
+Imports GitHub's security advisories for the ecosystems listed in
+`osv_ecosystems` of `technologies.yaml` (today Maven and npm). Adding an
+ecosystem is only adding it to that file. Why OSV and not the GitHub API:
+[ADR 0003](adr/0003-package-advisories-from-osv.md).
+
+Flow: download `<ecosystem>/all.zip` from OSV -> read the `GHSA-*` records inside the
+zip -> validate and normalize -> store in the `advisories*` tables.
+
+- **Cache.** The zips are kept in `backend/data/cache/` with their `ETag`. When OSV says
+  nothing changed, nothing is downloaded: a repeated run takes about 12 s instead of
+  about 50 s. The first run downloads about 230 MB (npm is 220 MB, mostly malware reports
+  that are discarded). A failed download never replaces the previous good file.
+- **Safe zip reading.** The zip is never extracted to disk. Members are read one by one
+  in memory; names with a path, members over 5 MB, non-`GHSA-` records and invalid JSON are
+  skipped. A download over 1 GB is aborted.
+- **What is imported.** Only `GHSA-*` records that affect a wanted ecosystem. Malicious-package
+  reports (`MAL-*`) are ignored. Withdrawn advisories are not stored, and are deleted if
+  they were stored before.
+- **Normalization.** `MODERATE` becomes `MEDIUM`. Only the CVSS vector is stored (OSV has no
+  score and it is never computed). Version ranges are kept as OSV reports them; fixed
+  versions are listed separately. Only `http(s)` links are kept. Dates are stored as UTC.
+- **Invalid records** are skipped and counted in the log; they never stop the rest.
+- **Repeatable.** An advisory is rewritten only when its `modified` date changed; EPSS
+  values already stored on it are preserved. An advisory present in both the Maven and npm
+  dumps is stored once.
+- **Retries.** Same exponential backoff as the other sources. Failures exit with code 1.
+
+First real run (2026-11-03): 7,102 Maven and 7,663 npm advisories (14,703 in total; 13,519
+with a CVE), 120 and 410 withdrawn ones skipped, 67 KEV CVEs with an advisory.
+
 ## Everything at once
 
 ```bash
 make ingest
 ```
 
-Runs `ingest-kev`, `ingest-epss` and `ingest-nvd` in that order and stops at
-the first failure. EPSS runs before NVD on purpose: it takes seconds, while the
+Runs `ingest-kev`, `ingest-osv`, `ingest-epss` and `ingest-nvd` in that order and
+stops at the first failure. EPSS runs before NVD on purpose: it takes seconds, while the
 first NVD run takes ~20 minutes (with a key). If NVD is interrupted, KEV and EPSS
 data are already stored and re-running `make ingest` resumes NVD where it stopped.
 After the first run, `make ingest` is quick because NVD skips CVEs fetched in the
 last 7 days.
 
-You can still run each step on its own (`make ingest-kev`, `make ingest-epss`,
-`make ingest-nvd`). KEV must come first on an empty database.
+You can still run each step on its own (`make ingest-kev`, `make ingest-osv`,
+`make ingest-epss`, `make ingest-nvd`). KEV must come first on an empty database.
 
 ## Where data goes
 `backend/data/zero_cool.db` (override with `DATABASE_PATH`). Git ignores it.
