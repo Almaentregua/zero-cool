@@ -7,7 +7,16 @@ con el mayor nivel de detalle posible. Permite:
   explotación (EPSS) y otros criterios.
 - Buscar por CVE específica o por texto libre.
 
-Alcance v1: [definir]. Fuera de alcance por ahora: [ej. alertas, usuarios, login].
+Alcance v1 (uso personal, una sola persona). Detalle en `docs/technical/scope.md`:
+- v1a: ingesta de CISA KEV, enriquecida con NVD (solo CVE de KEV) y EPSS.
+- v1b: ingesta de OSV.dev y GitHub Security Advisories (ecosistemas Maven y npm).
+- Filtros: fecha de alta, tecnología, vendor/producto, severidad (CVSS),
+  EPSS mínimo, usada en ransomware.
+- Búsqueda por CVE ID y por texto libre; lista y página de detalle.
+- Las tecnologías (Java/Maven, Node.js/npm) se definen en `technologies.yaml`;
+  agregar una es solo agregar una entrada, sin tocar la lógica.
+- Fuera de alcance: usuarios y login, alertas, lista personal de stack,
+  resúmenes con IA, despliegue en la nube.
 
 # Stack tecnológico
 

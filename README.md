@@ -57,6 +57,8 @@ Run `make help` for the full list. Main targets:
 
 ## Documentation
 
+- What each page/API offers: `docs/functional/pages.md` and `docs/technical/api.md`
+- v1 scope: `docs/technical/scope.md`
 - Functional docs: `docs/functional/`
 - Technical docs: `docs/technical/`
 - Architecture decisions: `docs/technical/adr/`
