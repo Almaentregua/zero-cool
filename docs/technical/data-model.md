@@ -51,6 +51,33 @@ many packages (Log4Shell lists 10).
 
 Withdrawn advisories and malicious-package reports are not stored.
 
+## Investigation reports
+
+Saved investigations (see [ADR 0004](adr/0004-investigations-on-demand-and-snapshots.md)).
+Independent of `vulnerabilities`: a report can include CVEs that are not in KEV.
+
+### `reports`
+`id`, `title`, `notes` (Markdown, untrusted), `status` (`open` / `done`), `created_at`, `updated_at`.
+
+### `report_cves`
+`report_id` (FK), `cve_id`. Unique per report. The CVE need not exist in `vulnerabilities`.
+
+### `report_source_results`
+Snapshot of what each source said about each CVE. One row per `report_id`, `cve_id` and
+`source` (unique), including sources that returned nothing, so a report always shows
+which sources were consulted.
+
+| Column | Notes |
+|--------|-------|
+| `source` | Source id, e.g. `nvd`, `epss`, `cve_org` |
+| `status` | `ok`, `no_data` or `error` |
+| `message` | Reason for `no_data` / `error`; never contains secrets |
+| `origin_url` | Link to where the data comes from (http/https only) |
+| `retrieved_at` | When the source was queried |
+| `payload_json` | Normalized data as JSON; `NULL` unless status is `ok` |
+
+Deleting a report deletes its CVEs and source results.
+
 ## Technologies
 Not stored in the database. They live in `technologies.yaml`; filtering by
 technology expands to its vendor/product pairs.

@@ -7,7 +7,7 @@ Missing data is stored as ``NULL`` and shown as "not available", never guessed.
 
 from datetime import date, datetime
 
-from sqlalchemy import ForeignKey, Index
+from sqlalchemy import ForeignKey, Index, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
@@ -140,6 +140,65 @@ class AdvisoryReference(Base):
     url: Mapped[str]
 
     advisory: Mapped[Advisory] = relationship(back_populates="references")
+
+
+class Report(Base):
+    """A saved investigation: CVEs under study, the user's notes and a snapshot of findings.
+
+    Reports are independent of ``vulnerabilities``: they never modify curated KEV data.
+    """
+
+    __tablename__ = "reports"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    title: Mapped[str]
+    notes: Mapped[str] = mapped_column(default="")  # Markdown; untrusted, never rendered as HTML
+    status: Mapped[str] = mapped_column(default="open")  # "open" or "done"
+    created_at: Mapped[datetime]
+    updated_at: Mapped[datetime]
+
+    cves: Mapped[list["ReportCve"]] = relationship(
+        back_populates="report", cascade="all, delete-orphan"
+    )
+    results: Mapped[list["ReportSourceResult"]] = relationship(
+        back_populates="report", cascade="all, delete-orphan"
+    )
+
+
+class ReportCve(Base):
+    """A CVE id under investigation in a report (it may not exist in ``vulnerabilities``)."""
+
+    __tablename__ = "report_cves"
+    __table_args__ = (UniqueConstraint("report_id", "cve_id"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    report_id: Mapped[int] = mapped_column(ForeignKey("reports.id"), index=True)
+    cve_id: Mapped[str]
+
+    report: Mapped[Report] = relationship(back_populates="cves")
+
+
+class ReportSourceResult(Base):
+    """What one source said about one CVE when the report was saved or refreshed.
+
+    One row per CVE and source, including sources that had nothing to say, so a report
+    always shows which sources were consulted.
+    """
+
+    __tablename__ = "report_source_results"
+    __table_args__ = (UniqueConstraint("report_id", "cve_id", "source"),)
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    report_id: Mapped[int] = mapped_column(ForeignKey("reports.id"), index=True)
+    cve_id: Mapped[str]
+    source: Mapped[str]  # source id, e.g. "nvd", "epss", "cve_org"
+    status: Mapped[str]  # "ok", "no_data" or "error"
+    message: Mapped[str | None]  # reason for no_data / error; never contains secrets
+    origin_url: Mapped[str | None]  # link to where the data comes from (http/https only)
+    retrieved_at: Mapped[datetime]
+    payload_json: Mapped[str | None]  # normalized source data as JSON; None unless status "ok"
+
+    report: Mapped[Report] = relationship(back_populates="results")
 
 
 def severity_from_cvss(score: float | None) -> str | None:

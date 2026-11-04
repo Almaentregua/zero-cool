@@ -22,11 +22,16 @@ also accept new sources over time without redesign.
 - **First batch of new sources:** CVE.org record, CISA Vulnrichment (same record) and
   MITRE CWE. Later sources are decided in their own ADR when they are added (rate limits,
   licensing).
-- **Reports are snapshots.** Saving stores the findings as they were (`report_findings`).
+- **Reports are snapshots.** Saving stores each source's result as it was.
   A refresh action re-fetches and shows what changed. Reports live in their own tables
-  (`reports`, `report_cves`, `report_findings`) and never modify `vulnerabilities`.
+  (`reports`, `report_cves`, `report_source_results`: one row per CVE and source) and never modify `vulnerabilities`.
 - **Notes are Markdown**, one field per report, stored as text and rendered without raw
   HTML. Findings and notes are untrusted input.
+- **Sources are always explicit.** Every block of a report names its source, links to
+  the origin, shows when it was retrieved and its status (data, no data, or error).
+  Sources that were queried but returned nothing are listed too, so the report says
+  what was checked, not only what was found. Data from different sources is never merged
+  into a single value.
 - **Failures are per source.** One source failing or lacking data does not fail the
   investigation; that block shows "not available" with the reason.
 
