@@ -25,6 +25,18 @@ to `report_source_results`.
   refresh. The cache is lost when the API restarts.
 - A timed-out request cannot be killed; its thread finishes in the background.
 
+## Current sources (`research/adapters/`, listed in `research/registry.py`)
+
+| Id | Source | Where the answer comes from | Cache | Notes |
+|----|--------|-----------------------------|-------|-------|
+| `kev` | CISA KEV | Local database (ingested catalog) | 5 min | "Not in KEV" is an answer (`in_kev: false`); error if the catalog was never ingested |
+| `nvd` | NVD (NIST) | Live API, any CVE | 24 h | Uses `NVD_API_KEY`; calls are serialized to respect the rate limit |
+| `epss` | EPSS (FIRST) | Live API | 1 h | Score and percentile, 0 to 1 |
+| `osv` | OSV / GitHub Advisories | Local database | 5 min | Only the ecosystems in `technologies.yaml`; says so when empty |
+
+Differences from the first design: NVD is always queried live (cached 24 h) instead of
+reading stored data first, which keeps one code path for KEV and non-KEV CVEs.
+
 ## Adding a source
-Create a module with a class that follows the interface and register it (the registry
-arrives with the first real sources). Tests use mocked HTTP, never real APIs.
+Create a module in `research/adapters/` with a class that follows the interface and add it
+to `build_sources` in `research/registry.py`. Tests use mocked HTTP, never real APIs.
