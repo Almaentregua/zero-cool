@@ -136,10 +136,13 @@ def test_osv_source_no_advisory_and_not_ingested(factory: Any) -> None:
 
 def test_registry_and_end_to_end_run_with_mocks(factory: Any) -> None:
     payload = json.loads(NVD_FIXTURE.read_text())
+    cve_org_payload = json.loads((NVD_FIXTURE.parent / "cve_org_log4j.json").read_text())
 
     def handler(request: httpx.Request) -> httpx.Response:
         if "nvd.nist.gov" in request.url.host:
             return httpx.Response(200, json=payload)
+        if "cveawg.mitre.org" in request.url.host:
+            return httpx.Response(200, json=cve_org_payload)
         return httpx.Response(
             200, json={"data": [{"cve": LOG4J, "epss": "0.9", "percentile": "0.98"}]}
         )
@@ -150,12 +153,14 @@ def test_registry_and_end_to_end_run_with_mocks(factory: Any) -> None:
         s.commit()
     client = httpx.Client(transport=httpx.MockTransport(handler))
     sources = build_sources(factory, client=client, nvd_api_key="secret-key")
-    assert [s.id for s in sources] == ["kev", "nvd", "epss", "osv"]
+    assert [s.id for s in sources] == ["kev", "nvd", "epss", "osv", "cve_org", "vulnrichment"]
     results = research(LOG4J, sources)
     assert [(r.source, r.status) for r in results] == [
         ("kev", "ok"),
         ("nvd", "ok"),
         ("epss", "ok"),
         ("osv", "no_data"),
+        ("cve_org", "ok"),
+        ("vulnrichment", "ok"),
     ]
     assert all("secret-key" not in (r.message or "") for r in results)

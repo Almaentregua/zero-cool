@@ -33,6 +33,14 @@ to `report_source_results`.
 | `nvd` | NVD (NIST) | Live API, any CVE | 24 h | Uses `NVD_API_KEY`; calls are serialized to respect the rate limit |
 | `epss` | EPSS (FIRST) | Live API | 1 h | Score and percentile, 0 to 1 |
 | `osv` | OSV / GitHub Advisories | Local database | 5 min | Only the ecosystems in `technologies.yaml`; says so when empty |
+| `cve_org` | CVE.org (CNA record) | Live API (CVE Services) | 6 h | What the CNA that assigned the CVE published: description, CWE, ratings, affected products, links |
+| `vulnrichment` | CISA Vulnrichment | Same API request | 6 h | CISA's container: SSVC (exploitation, automatable, technical impact), CVSS, CWE. "No data" when CISA did not enrich the CVE |
+
+`cve_org` and `vulnrichment` read the same record (`sources/cve_org.py`, one request shared
+through a 60 s memo) but are separate blocks because they have different authors; their
+values are never merged. The record format was checked against the live API
+(`https://cveawg.mitre.org/api/cve/{id}`; unknown ids answer HTTP 404) and two real
+records are kept as test fixtures. Rejected records are shown with their rejection reason.
 
 Differences from the first design: NVD is always queried live (cached 24 h) instead of
 reading stored data first, which keeps one code path for KEV and non-KEV CVEs.

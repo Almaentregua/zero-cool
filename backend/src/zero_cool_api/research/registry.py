@@ -6,11 +6,13 @@ from collections.abc import Callable
 import httpx
 from sqlalchemy.orm import Session
 
+from zero_cool_api.research.adapters.cve_org import CveOrgSource, VulnrichmentSource
 from zero_cool_api.research.adapters.epss import EpssSource
 from zero_cool_api.research.adapters.kev import KevSource
 from zero_cool_api.research.adapters.nvd import NvdSource
 from zero_cool_api.research.adapters.osv import OsvSource
 from zero_cool_api.research.base import ResearchSource
+from zero_cool_api.sources.cve_org import CveOrgClient
 from zero_cool_api.sources.nvd import NvdClient
 
 HTTP_TIMEOUT_SECONDS = 10.0
@@ -37,9 +39,12 @@ def build_sources(
     """
     http = client or httpx.Client(timeout=HTTP_TIMEOUT_SECONDS, follow_redirects=True)
     key = nvd_api_key if nvd_api_key is not None else os.environ.get("NVD_API_KEY") or None
+    cve_records = CveOrgClient(http)
     return [
         KevSource(session_factory),
         NvdSource(NvdClient(http, key)),
         EpssSource(http),
         OsvSource(session_factory),
+        CveOrgSource(cve_records),
+        VulnrichmentSource(cve_records),
     ]
