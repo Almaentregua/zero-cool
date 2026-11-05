@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from zero_cool_api.api.advisories import router as advisories_router
+from zero_cool_api.api.research import router as research_router
 from zero_cool_api.api.routes import router
 
 DEFAULT_CORS_ORIGINS = "http://localhost:5173"
@@ -45,6 +46,7 @@ def create_app() -> FastAPI:
 
     app.include_router(router)
     app.include_router(advisories_router)
+    app.include_router(research_router)
 
     @app.get(
         "/api/health",

@@ -89,8 +89,20 @@ that CVE has a page under `/api/vulnerabilities/{cve_id}`) and `packages`, each 
 `GET /api/vulnerabilities/{cve_id}` also returns `advisories`: the package advisories that
 mention that CVE (`id`, `summary`, `severity`, `packages`). Empty when there are none (most KEV CVEs).
 
+## `GET /api/research/{cve_id}`
+Investigates one CVE across every research source (see [research sources](research-sources.md)
+and [ADR 0004](adr/0004-investigations-on-demand-and-snapshots.md)). Works for any CVE, in KEV
+or not. Query parameter `refresh=true` ignores cached results.
+
+Response: `cve_id`, `generated_at`, `sources` (a summary of every source consulted, with its
+`status`) and `results` (one block per source: `source`, `source_name`, `status`, `message`,
+`origin_url`, `retrieved_at`, `data`). `status` is `ok`, `no_data` or `error`; `message` says why
+when it is not `ok`. Blocks are never merged. One failing source never fails the request: it is
+an `error` block. The id is case-insensitive; **422** if it is not a valid CVE id (no source is
+called). The shape of `data` depends on the source.
+
 ## Implementation notes
-- Routes: `api/routes.py` (KEV vulnerabilities, technologies) and `api/advisories.py`; shared
+- Routes: `api/routes.py` (KEV vulnerabilities, technologies), `api/advisories.py` and `api/research.py`; shared
   dependencies: `api/deps.py`; response models: `api/schemas.py`; filter and sort logic: `queries.py`.
 - All values reach SQL as bound parameters (no SQL injection).
 - A technology filter expands to its vendor/product pairs from `technologies.yaml`
