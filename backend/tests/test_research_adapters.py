@@ -138,9 +138,15 @@ def test_registry_and_end_to_end_run_with_mocks(factory: Any) -> None:
     payload = json.loads(NVD_FIXTURE.read_text())
     cve_org_payload = json.loads((NVD_FIXTURE.parent / "cve_org_log4j.json").read_text())
 
+    cwe_payload = json.loads((NVD_FIXTURE.parent / "cwe_weakness_502.json").read_text())
+
     def handler(request: httpx.Request) -> httpx.Response:
         if "nvd.nist.gov" in request.url.host:
             return httpx.Response(200, json=payload)
+        if "cwe-api.mitre.org" in request.url.host:
+            if "/weakness/" in request.url.path:
+                return httpx.Response(200, json=cwe_payload)
+            return httpx.Response(200, json=[{"Type": "base_weakness", "ID": "502"}])
         if "cveawg.mitre.org" in request.url.host:
             return httpx.Response(200, json=cve_org_payload)
         return httpx.Response(
@@ -153,7 +159,15 @@ def test_registry_and_end_to_end_run_with_mocks(factory: Any) -> None:
         s.commit()
     client = httpx.Client(transport=httpx.MockTransport(handler))
     sources = build_sources(factory, client=client, nvd_api_key="secret-key")
-    assert [s.id for s in sources] == ["kev", "nvd", "epss", "osv", "cve_org", "vulnrichment"]
+    assert [s.id for s in sources] == [
+        "kev",
+        "nvd",
+        "epss",
+        "osv",
+        "cve_org",
+        "vulnrichment",
+        "cwe",
+    ]
     results = research(LOG4J, sources)
     assert [(r.source, r.status) for r in results] == [
         ("kev", "ok"),
@@ -162,5 +176,6 @@ def test_registry_and_end_to_end_run_with_mocks(factory: Any) -> None:
         ("osv", "no_data"),
         ("cve_org", "ok"),
         ("vulnrichment", "ok"),
+        ("cwe", "ok"),
     ]
     assert all("secret-key" not in (r.message or "") for r in results)

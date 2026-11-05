@@ -35,6 +35,12 @@ to `report_source_results`.
 | `osv` | OSV / GitHub Advisories | Local database | 5 min | Only the ecosystems in `technologies.yaml`; says so when empty |
 | `cve_org` | CVE.org (CNA record) | Live API (CVE Services) | 6 h | What the CNA that assigned the CVE published: description, CWE, ratings, affected products, links |
 | `vulnrichment` | CISA Vulnrichment | Same API request | 6 h | CISA's container: SSVC (exploitation, automatable, technical impact), CVSS, CWE. "No data" when CISA did not enrich the CVE |
+| `cwe` | MITRE CWE | Live API (`cwe-api.mitre.org`) | 24 h | Official name and definition of each CWE listed in the CVE record; says who listed it (`cna`, `cisa` or both) |
+
+`cwe` depends on the CVE record: it takes the CWE ids from it (at most 10). An id MITRE does
+not know is shown with no name or text (nothing is invented); views are not weaknesses and
+are treated the same way. `/cwe/{id}` only returns the kind of entry, so a weakness costs two
+requests (kind, then details); entries are memoized for 24 h. Verified against the live API.
 
 `cve_org` and `vulnrichment` read the same record (`sources/cve_org.py`, one request shared
 through a 60 s memo) but are separate blocks because they have different authors; their
