@@ -16,3 +16,13 @@
 - **Fixed version**: a version of a package in which the problem is solved.
 - **Withdrawn advisory**: an advisory its authors later retracted. The app does not show them.
 - **CPE**: standard text identifying a product and version.
+- **Investigation**: looking up one or more CVEs across every source at once. Saved, it becomes a **report**.
+- **Report**: a saved investigation: your notes, the CVEs and a snapshot of what each source said when it was retrieved. You can reopen it and refresh it.
+- **Snapshot**: the data as it was when it was retrieved. It does not change by itself; **Refresh** updates it.
+- **Source block**: the part of an investigation that comes from one source, with its link, retrieval time and status (*Has data*, *No data* or *Error*).
+- **CNA** (CVE Numbering Authority): the organization (a vendor, a project, a security firm) that assigned the CVE and wrote its official record.
+- **ADP** (Authorized Data Publisher): an organization that adds information to someone else's CVE record. CISA is one (see Vulnrichment).
+- **Vulnrichment**: CISA's project that enriches CVE records with an SSVC decision, CVSS and weakness (CWE) data.
+- **SSVC** (Stakeholder-Specific Vulnerability Categorization): a decision method. CISA publishes three points: **exploitation** (none, public proof of concept, or active), **automatable** (can an attack be automated at scale: yes or no) and **technical impact** (partial or total).
+- **CWE** (Common Weakness Enumeration): a catalog of kinds of software weaknesses, e.g. `CWE-502` Deserialization of Untrusted Data. A CVE is one instance of a weakness; a CWE is the type. A **category** groups related weaknesses.
+- **Markdown**: a simple way to format text (`# title`, `- list`, `**bold**`) used for report notes.

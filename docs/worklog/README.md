@@ -5,5 +5,6 @@ the end of that day's file.
 
 ## Current state
 - Working: v1a and v1b end to end (KEV, NVD, EPSS, OSV advisories: ingestion, API, list and detail pages)
-- In progress: Investigations feature (ADR 0004); step 9 of 10 done; review of the UI and of v1b
-- Next steps: review the UI in a browser; extend technologies.yaml; decide what comes after v1
+- Working: Investigations first iteration (ADR 0004): 7 sources, reports with notes, refresh and diff
+- In progress: review of the UI (Investigations, v1b)
+- Next steps: review the UI in a browser; more Investigations sources (see `docs/technical/design/cve-research.md`); extend technologies.yaml

@@ -21,7 +21,7 @@ Initially Java (Maven) and Node.js (npm). They are defined in
 `technologies.yaml` (name, OSV ecosystems, vendor/product pairs). Adding a
 technology is only adding an entry; no code changes.
 
-## Post-v1: Investigations
+## Post-v1: Investigations (implemented)
 Research any CVE (in KEV or not) across all sources and save reports to continue later.
 For CVEs outside KEV, NVD and EPSS are fetched on demand, only inside an investigation;
 ingestion stays KEV-only. See [ADR 0004](adr/0004-investigations-on-demand-and-snapshots.md)

@@ -12,6 +12,9 @@ different question about the same vulnerability (CVE).
 | **NVD** (NIST) | How severe is it, and what are the technical details? | Official description, CVSS score and vector, publication and modification dates, reference links | Available (v1a) |
 | **EPSS** (FIRST) | How likely is it to be exploited soon? | Probability (0 to 1) of exploitation in the next 30 days, and its percentile | Available (v1a) |
 | **OSV.dev** (GitHub advisories) | Which packages and versions are affected, and which fix them? | Package advisories for Maven and npm with affected packages, version ranges and fixed versions | Available (v1b) |
+| **CVE.org** (CVE Program) | What did the organization that assigned the CVE say about it? | The official CVE record: description, weaknesses, ratings, affected products, links | Available (Investigations) |
+| **CISA Vulnrichment** | What does CISA think about it? | SSVC decision (exploitation, automatable, technical impact), CVSS and weaknesses added by CISA | Available (Investigations) |
+| **MITRE CWE** | What kind of weakness is it? | Name and definition of each weakness type (CWE) listed for the CVE | Available (Investigations) |
 
 ## How the three main numbers differ
 
@@ -82,6 +85,27 @@ and npm (Node.js).
 - **Not included:** reports of malicious packages, and withdrawn advisories.
 - **EPSS** is added to advisories that have a CVE. If an advisory lists several CVEs, the
   highest EPSS is shown. Advisories without a CVE show "Not available".
+
+## CVE.org, CISA Vulnrichment and MITRE CWE
+
+These three are only used by **Investigations** and are asked live, for any CVE (they are not
+downloaded into the list).
+
+- **CVE.org** is the CVE Program's own record, written by the CNA that assigned the CVE. It often
+  appears before NVD has processed the CVE. Its ratings (if any) belong to the CNA.
+- **CISA Vulnrichment** is CISA's addition to that record. Not every CVE has it: when CISA has not
+  enriched a CVE the block says so. CISA's values stay separate from the CNA's and from NVD's.
+- **MITRE CWE** explains the weakness types named in the record. It says whether the CNA, CISA or both
+  listed each one. If MITRE has no such entry, the block shows the id without a name.
+- **SSVC** (from CISA) answers a practical question: is it being exploited (*exploitation*), could an attack
+  be automated at scale (*automatable*) and how much does it compromise (*technical impact*).
+
+## Which sources Investigations asks
+
+Investigations asks all seven sources for any CVE. KEV and OSV answer from the data you loaded with
+`make ingest` (so they need it); NVD, EPSS, CVE.org, Vulnrichment and CWE are queried live and remembered
+for a while (hours; EPSS one hour) to avoid asking again. **Refresh** ignores that memory. A source that
+cannot be reached shows an error in its own block and does not affect the others.
 
 ## Keeping data fresh
 

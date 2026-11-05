@@ -8,5 +8,5 @@
 - [Research sources](research-sources.md)
 - [technologies.yaml](technologies.md)
 - [Architecture decisions](adr/)
-- [Design drafts](design/): proposals under discussion, e.g. [CVE research workspace](design/cve-research.md)
+- [Design notes](design/): [Investigations (CVE research workspace)](design/cve-research.md), with the roadmap for new sources
 - Setup and commands: root `README.md`

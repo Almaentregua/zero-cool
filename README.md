@@ -2,11 +2,13 @@
 
 Web application to stay up to date with new security vulnerabilities, with as
 much detail as possible. Browse vulnerabilities by date, technology, severity,
-exploitation status and more, and search by CVE ID or free text.
+exploitation status and more, and search by CVE ID or free text. The **Investigations**
+page looks up any CVE across seven sources (each shown on its own, with origin and time) and
+saves reports with your notes to continue later.
 
 ## Status
 
-Project setup. See `docs/worklog/README.md` for the current state.
+v1a, v1b and Investigations are working. See `docs/worklog/README.md` for the current state.
 
 ## Structure
 
@@ -28,7 +30,9 @@ make dev       # API on :8000, frontend on :5173
 ```
 
 Open http://localhost:5173. First load data with `make ingest` (the first NVD run takes
-about 20 minutes; the list works with partial data in the meantime). API docs (OpenAPI) are at http://localhost:8000/docs.
+about 20 minutes; the list works with partial data in the meantime). Investigations queries NVD,
+EPSS, CVE.org, CISA Vulnrichment and MITRE CWE live (no setup beyond the optional `NVD_API_KEY`); its KEV and
+advisory blocks use the data loaded by `make ingest`. Reports are stored in the same SQLite database. API docs (OpenAPI) are at http://localhost:8000/docs.
 
 ## Configuration
 
@@ -77,6 +81,7 @@ Run `make help` for the full list. Main targets:
 
 - What each page/API offers: `docs/functional/pages.md` and `docs/technical/api.md`
 - v1 scope: `docs/technical/scope.md`
+- Investigations: `docs/technical/design/cve-research.md`, `docs/technical/research-sources.md` and ADR 0004
 - Functional docs: `docs/functional/`
 - Technical docs: `docs/technical/`
 - Architecture decisions: `docs/technical/adr/`
