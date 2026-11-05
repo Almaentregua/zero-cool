@@ -13,6 +13,8 @@ or styling libraries (plain CSS in `src/index.css`, light and dark mode).
 | `src/pages/DetailPage.tsx` | `/cve/:cveId` - all fields, description, references, related package advisories |
 | `src/pages/AdvisoryListPage.tsx` | `/advisories` - package advisories with filters, sorting, pagination |
 | `src/pages/AdvisoryDetailPage.tsx` | `/advisory/:advisoryId` - packages with version ranges, CVEs, details, references |
+| `src/pages/InvestigationPage.tsx` | `/investigations?cves=A,B` - one section per CVE, a summary of sources consulted and one block per source |
+| `src/components/SourceData.tsx` | One view per research source (`kev`, `nvd`, `epss`, `osv`, `cve_org`, `vulnrichment`, `cwe`) plus a generic fallback |
 | `src/components/` | `FilterBar`, `AdvisoryFilterBar`, `Pagination`, severity and yes/no badges |
 
 ## Design decisions
@@ -33,6 +35,17 @@ or styling libraries (plain CSS in `src/index.css`, light and dark mode).
 - **Version ranges are repeated, not interpreted.** `describeRange` turns OSV events into text
   ("introduced 2.13.0 → fixed 2.15.0"). Whether a given version is affected is not computed,
   because Maven and npm order versions differently.
+
+## Investigations page
+- The CVE ids live in the URL (`?cves=`); each CVE is its own component with its own request,
+  so they load independently. Invalid ids are reported and never sent to the API (max 10).
+- **Sources are always explicit:** a summary lists every source consulted with its status
+  (Has data / No data / Error, always as text, not only color); each block shows the source
+  name, its origin link, the retrieval time and, if not `ok`, the reason. Sources are never merged.
+- `SourceData` knows the `data` shape of each source; a new source works without a view (the
+  generic fallback prints its fields as text) and gets a dedicated view when worth it.
+- "Refresh from the sources" calls the API with `refresh=true`.
+- Not part of this page yet: saving and reopening reports (next step).
 
 ## Tests
 `make test-frontend` (Vitest + Testing Library, `fetch` is mocked; no real API calls).

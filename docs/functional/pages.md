@@ -1,7 +1,7 @@
 # Pages
 
 > Status: **available** (v1a and v1b). Open http://localhost:5173 after `make dev`.
-> The top menu switches between **Known exploited (KEV)** and **Package advisories**.
+> The top menu switches between **Known exploited (KEV)**, **Package advisories** and **Investigations**.
 
 ## Vulnerability list
 
@@ -108,3 +108,38 @@ run takes about 20 minutes because of NVD's request limits; later runs are fast)
 |------|--------|
 | List and detail with KEV, NVD and EPSS data | Available (v1a) |
 | Package advisories for Maven and npm (OSV, GitHub) | Available (v1b) |
+
+## Investigations
+
+**Problem it solves:** when one vulnerability matters to you, gather everything known about it
+without opening a dozen websites, and see exactly where each fact comes from.
+
+**How to use it:** open **Investigations**, type one or more CVE ids (separated by spaces or
+commas, up to 10) and press **Investigate**. It works for any CVE, whether it is in the KEV
+catalog or not. It can take several seconds because every source is asked. **Refresh from the
+sources** asks them again instead of reusing recent answers.
+
+**What you see:** for each CVE, first a list of **Sources consulted** with the result of each
+one, then one block per source:
+
+| Source | What it tells you |
+|--------|-------------------|
+| CISA KEV | Whether attackers are known to exploit it, since when, and ransomware use. "No" is an answer too |
+| NVD (NIST) | Official description, CVSS score and vector, dates and links |
+| EPSS (FIRST) | Probability that it will be exploited in the next 30 days |
+| OSV / GitHub Advisories | Maven and npm packages affected and the versions that fix it |
+| CVE.org (CNA record) | What the organization that assigned the CVE published: description, weaknesses, affected products |
+| CISA Vulnrichment | CISA's own assessment: SSVC decision (exploitation, automatable, technical impact), CVSS and weaknesses |
+| MITRE CWE | What each weakness type listed for the CVE means |
+
+Every block shows the **source**, a link to where the data comes from, **when it was retrieved**
+and its **status**: *Has data*, *No data* (the source was asked and has nothing; the reason is
+given) or *Error* (the source could not be reached; the others are not affected). Values from
+different sources are never merged: if NVD and CISA rate it differently, you see both.
+Anything missing is shown as "not available".
+
+**Example:** type `CVE-2021-44228` and press Investigate. You see it is in KEV with a CVSS of
+10.0, that CISA marks exploitation as *active*, that its weakness is CWE-502 (deserialization of
+untrusted data), and which Maven packages fix it.
+
+Saving an investigation as a report to continue later is coming next.

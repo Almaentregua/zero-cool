@@ -197,3 +197,32 @@ export function fetchAdvisories(params: URLSearchParams, signal?: AbortSignal) {
 export function fetchAdvisory(id: string, signal?: AbortSignal) {
   return getJson<AdvisoryDetail>(`/api/advisories/${encodeURIComponent(id)}`, signal);
 }
+
+export type SourceStatus = "ok" | "no_data" | "error";
+
+/**
+ * What one research source answered about one CVE. `data` is source specific and comes
+ * from external sources: it is untrusted and must only be rendered as text.
+ */
+export interface SourceResult {
+  source: string;
+  source_name: string;
+  cve_id: string;
+  status: SourceStatus;
+  message: string | null;
+  origin_url: string | null;
+  retrieved_at: string;
+  data: Record<string, unknown> | null;
+}
+
+export interface ResearchResponse {
+  cve_id: string;
+  generated_at: string;
+  sources: { source: string; source_name: string; status: SourceStatus }[];
+  results: SourceResult[];
+}
+
+export function fetchResearch(cveId: string, refresh: boolean, signal?: AbortSignal) {
+  const query = refresh ? "?refresh=true" : "";
+  return getJson<ResearchResponse>(`/api/research/${encodeURIComponent(cveId)}${query}`, signal);
+}

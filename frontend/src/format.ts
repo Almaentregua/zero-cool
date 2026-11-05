@@ -50,3 +50,29 @@ export function describeRange(range: { events?: Record<string, string>[] }): str
   );
   return parts.length > 0 ? parts.join(" → ") : NOT_AVAILABLE;
 }
+
+/** "2026-11-04T15:00:12Z" -> "2026-11-04 15:00 UTC". Returns "Not available" for null. */
+export function formatDateTime(value: string | null): string {
+  if (value === null) return NOT_AVAILABLE;
+  return `${value.slice(0, 10)} ${value.slice(11, 16)} UTC`;
+}
+
+const CVE_ID = /^CVE-\d{4}-\d{4,}$/;
+
+/**
+ * Splits text typed by the user into CVE ids (separated by spaces, commas or semicolons).
+ * Ids are upper-cased and de-duplicated; anything that is not a CVE id goes to `invalid`.
+ */
+export function parseCveIds(text: string): { valid: string[]; invalid: string[] } {
+  const valid: string[] = [];
+  const invalid: string[] = [];
+  for (const token of text.split(/[\s,;]+/).filter(Boolean)) {
+    const id = token.toUpperCase();
+    if (CVE_ID.test(id)) {
+      if (!valid.includes(id)) valid.push(id);
+    } else {
+      invalid.push(token.slice(0, 30));
+    }
+  }
+  return { valid, invalid };
+}

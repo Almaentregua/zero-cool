@@ -3,6 +3,7 @@ import { Link, NavLink, Route, Routes } from "react-router-dom";
 import AdvisoryDetailPage from "./pages/AdvisoryDetailPage";
 import AdvisoryListPage from "./pages/AdvisoryListPage";
 import DetailPage from "./pages/DetailPage";
+import InvestigationPage from "./pages/InvestigationPage";
 import ListPage from "./pages/ListPage";
 
 /** Layout and routes. */
@@ -18,6 +19,7 @@ export default function App() {
             Known exploited (KEV)
           </NavLink>
           <NavLink to="/advisories">Package advisories</NavLink>
+          <NavLink to="/investigations">Investigations</NavLink>
         </nav>
       </header>
       <main>
@@ -26,6 +28,7 @@ export default function App() {
           <Route path="/cve/:cveId" element={<DetailPage />} />
           <Route path="/advisories" element={<AdvisoryListPage />} />
           <Route path="/advisory/:advisoryId" element={<AdvisoryDetailPage />} />
+          <Route path="/investigations" element={<InvestigationPage />} />
           <Route path="*" element={<p>Page not found. <Link to="/">Go to the list</Link></p>} />
         </Routes>
       </main>
