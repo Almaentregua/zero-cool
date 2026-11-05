@@ -1,18 +1,12 @@
 import { useState, type FormEvent } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
-import { fetchResearch, type ResearchResponse, type SourceResult, type SourceStatus } from "../api";
-import SourceData from "../components/SourceData";
-import { NOT_AVAILABLE, formatDateTime, parseCveIds, safeUrl } from "../format";
+import { createReport, fetchResearch } from "../api";
+import { SourceBlock, Summary } from "../components/SourceBlock";
+import { formatDateTime, parseCveIds } from "../format";
 import { useFetch } from "../useFetch";
 
 const MAX_CVES = 10;
-const STATUS_LABEL: Record<SourceStatus, string> = {
-  ok: "Has data",
-  no_data: "No data",
-  error: "Error",
-};
-
 /** Investigate one or more CVEs: one clearly separated block per source. */
 export default function InvestigationPage() {
   const [params, setParams] = useSearchParams();
@@ -59,6 +53,7 @@ export default function InvestigationPage() {
           {valid.length > MAX_CVES && `Only the first ${MAX_CVES} CVEs are investigated.`}
         </p>
       )}
+      {ids.length > 0 && <SavePanel cves={ids} />}
       {ids.map((id) => (
         <CveResearch key={id} cveId={id} />
       ))}
@@ -92,7 +87,7 @@ function CveResearch({ cveId }: { cveId: string }) {
               Refresh from the sources
             </button>
           </p>
-          <Summary data={state.data} />
+          <Summary cveId={state.data.cve_id} sources={state.data.sources} />
           {state.data.results.map((r) => (
             <SourceBlock key={r.source} result={r} />
           ))}
@@ -102,43 +97,46 @@ function CveResearch({ cveId }: { cveId: string }) {
   );
 }
 
-function Summary({ data }: { data: ResearchResponse }) {
-  return (
-    <nav aria-label={`Sources consulted for ${data.cve_id}`} className="source-summary">
-      <h3>Sources consulted ({data.sources.length})</h3>
-      <ul>
-        {data.sources.map((s) => (
-          <li key={s.source}>
-            <a href={`#${data.cve_id}-${s.source}`}>{s.source_name}</a>{" "}
-            <span className={`status status-${s.status}`}>{STATUS_LABEL[s.status]}</span>
-          </li>
-        ))}
-      </ul>
-    </nav>
-  );
-}
+/** Saves the investigated CVEs as a report (a snapshot of what every source says now). */
+function SavePanel({ cves }: { cves: string[] }) {
+  const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-function SourceBlock({ result: r }: { result: SourceResult }) {
-  const origin = r.origin_url ? safeUrl(r.origin_url) : null;
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError(null);
+    try {
+      const report = await createReport(title.trim() || cves.join(", "), cves);
+      navigate(`/reports/${report.id}`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error");
+      setBusy(false);
+    }
+  }
+
   return (
-    <article className="source-block" id={`${r.cve_id}-${r.source}`}>
-      <header>
-        <h3>{r.source_name}</h3>
-        <span className={`status status-${r.status}`}>{STATUS_LABEL[r.status]}</span>
-      </header>
-      <p className="meta muted">
-        Source:{" "}
-        {origin ? (
-          <a href={origin} target="_blank" rel="noopener noreferrer">
-            {origin}
-          </a>
-        ) : (
-          NOT_AVAILABLE
-        )}
-        {" · "}Retrieved: {formatDateTime(r.retrieved_at)}
-      </p>
-      {r.status !== "ok" && r.message && <p className={r.status === "error" ? "error" : ""}>{r.message}</p>}
-      {r.status === "ok" && r.data && <SourceData source={r.source} data={r.data} />}
-    </article>
+    <form className="save-panel" onSubmit={save}>
+      <label>
+        Save as a report to keep it and continue later
+        <input
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder={cves.join(", ")}
+          maxLength={200}
+          aria-label="Report title"
+        />
+      </label>
+      <button type="submit" disabled={busy}>
+        {busy ? "Saving… (querying the sources)" : "Save as report"}
+      </button>
+      {error && (
+        <p role="alert" className="error">
+          Could not save the report: {error}
+        </p>
+      )}
+    </form>
   );
 }

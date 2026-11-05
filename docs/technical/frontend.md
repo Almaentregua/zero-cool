@@ -15,6 +15,9 @@ or styling libraries (plain CSS in `src/index.css`, light and dark mode).
 | `src/pages/AdvisoryDetailPage.tsx` | `/advisory/:advisoryId` - packages with version ranges, CVEs, details, references |
 | `src/pages/InvestigationPage.tsx` | `/investigations?cves=A,B` - one section per CVE, a summary of sources consulted and one block per source |
 | `src/components/SourceData.tsx` | One view per research source (`kev`, `nvd`, `epss`, `osv`, `cve_org`, `vulnrichment`, `cwe`) plus a generic fallback |
+| `src/pages/ReportListPage.tsx` | `/reports` - saved reports, most recently updated first |
+| `src/pages/ReportPage.tsx` | `/reports/:reportId` - notes, status, CVEs, refresh with changes, delete, and the saved snapshot |
+| `src/components/Notes.tsx`, `src/notesMode.ts` | Notes view (Markdown or plain text) and the remembered display mode |
 | `src/components/` | `FilterBar`, `AdvisoryFilterBar`, `Pagination`, severity and yes/no badges |
 
 ## Design decisions
@@ -45,7 +48,22 @@ or styling libraries (plain CSS in `src/index.css`, light and dark mode).
 - `SourceData` knows the `data` shape of each source; a new source works without a view (the
   generic fallback prints its fields as text) and gets a dedicated view when worth it.
 - "Refresh from the sources" calls the API with `refresh=true`.
-- Not part of this page yet: saving and reopening reports (next step).
+- "Save as report" creates a report from the investigated CVEs (title optional, defaults to the CVE ids)
+  and opens it. The backend queries the sources again (usually served from its cache).
+
+## Reports page and notes
+- Blocks are the same `SourceBlock` as in the investigation, but they show the **saved snapshot**,
+  with a reminder that it may differ from what the sources say today.
+- **Refresh** shows what changed (`describeChange`); a source that failed during the refresh keeps its
+  old block and says so. Delete asks for confirmation.
+- **Notes are Markdown, shown in the mode the user picks** (Markdown or Plain text). The mode is only
+  a display preference kept in `localStorage` (wrapped in try/catch); notes are always stored exactly as
+  typed, so switching never loses anything. While editing there is a preview in the chosen mode.
+- **Dependency added: `react-markdown`** (10.x). Reason: rendering Markdown safely by hand would mean
+  writing a parser. It builds React elements (no `dangerouslySetInnerHTML`), and we configure it with
+  `skipHtml` (raw HTML in notes is dropped), `urlTransform` limited to http(s) via `safeUrl`, links with
+  `rel="noopener noreferrer"`, and images replaced by their alt text so nothing is loaded from third
+  parties. Tests cover `<script>`, a `javascript:` link and a remote image.
 
 ## Tests
 `make test-frontend` (Vitest + Testing Library, `fetch` is mocked; no real API calls).

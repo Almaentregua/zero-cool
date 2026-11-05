@@ -161,19 +161,36 @@ export function cleanAdvisoryParams(source: URLSearchParams): URLSearchParams {
   return cleanParams(source, ADVISORY_PARAMS);
 }
 
-async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
-  const response = await fetch(url, { signal });
+async function request<T>(url: string, init: RequestInit = {}): Promise<T> {
+  const response = await fetch(url, init);
   if (!response.ok) {
     let message = `Request failed (${response.status})`;
     try {
       const body = await response.json();
       if (typeof body?.detail === "string") message = body.detail;
+      // FastAPI validation errors come as a list of {msg}.
+      else if (Array.isArray(body?.detail)) {
+        message = body.detail.map((d: { msg?: string }) => d.msg).filter(Boolean).join("; ") || message;
+      }
     } catch {
       // body was not JSON; keep the generic message
     }
     throw new ApiError(message, response.status);
   }
+  if (response.status === 204) return undefined as T;
   return (await response.json()) as T;
+}
+
+function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
+  return request<T>(url, { signal });
+}
+
+function sendJson<T>(method: string, url: string, body?: unknown): Promise<T> {
+  return request<T>(url, {
+    method,
+    headers: body === undefined ? undefined : { "Content-Type": "application/json" },
+    body: body === undefined ? undefined : JSON.stringify(body),
+  });
 }
 
 export function fetchVulnerabilities(params: URLSearchParams, signal?: AbortSignal) {
@@ -225,4 +242,70 @@ export interface ResearchResponse {
 export function fetchResearch(cveId: string, refresh: boolean, signal?: AbortSignal) {
   const query = refresh ? "?refresh=true" : "";
   return getJson<ResearchResponse>(`/api/research/${encodeURIComponent(cveId)}${query}`, signal);
+}
+
+export type ReportStatus = "open" | "done";
+
+export interface ReportSummary {
+  id: number;
+  title: string;
+  status: ReportStatus;
+  cves: string[];
+  created_at: string;
+  updated_at: string;
+}
+
+/** `notes` is Markdown typed by the user: untrusted, never rendered as HTML. */
+export interface ReportDetail extends ReportSummary {
+  notes: string;
+  results: SourceResult[];
+}
+
+export type ChangeKind = "new" | "status" | "data" | "refresh_failed";
+
+export interface Change {
+  cve_id: string;
+  source: string;
+  source_name: string;
+  kind: ChangeKind;
+  before_status: SourceStatus | null;
+  after_status: SourceStatus;
+  fields: string[];
+}
+
+export interface RefreshResponse {
+  report: ReportDetail;
+  changes: Change[];
+}
+
+export interface ReportUpdate {
+  title?: string;
+  notes?: string;
+  status?: ReportStatus;
+  add_cves?: string[];
+  remove_cves?: string[];
+}
+
+export function createReport(title: string, cves: string[]) {
+  return sendJson<ReportDetail>("POST", "/api/reports", { title, cves });
+}
+
+export function fetchReports(signal?: AbortSignal) {
+  return getJson<ReportSummary[]>("/api/reports", signal);
+}
+
+export function fetchReport(id: string, signal?: AbortSignal) {
+  return getJson<ReportDetail>(`/api/reports/${encodeURIComponent(id)}`, signal);
+}
+
+export function updateReport(id: number, changes: ReportUpdate) {
+  return sendJson<ReportDetail>("PATCH", `/api/reports/${id}`, changes);
+}
+
+export function refreshReport(id: number) {
+  return sendJson<RefreshResponse>("POST", `/api/reports/${id}/refresh`);
+}
+
+export function deleteReport(id: number) {
+  return sendJson<void>("DELETE", `/api/reports/${id}`);
 }

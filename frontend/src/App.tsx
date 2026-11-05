@@ -5,6 +5,8 @@ import AdvisoryListPage from "./pages/AdvisoryListPage";
 import DetailPage from "./pages/DetailPage";
 import InvestigationPage from "./pages/InvestigationPage";
 import ListPage from "./pages/ListPage";
+import ReportListPage from "./pages/ReportListPage";
+import ReportPage from "./pages/ReportPage";
 
 /** Layout and routes. */
 export default function App() {
@@ -20,6 +22,7 @@ export default function App() {
           </NavLink>
           <NavLink to="/advisories">Package advisories</NavLink>
           <NavLink to="/investigations">Investigations</NavLink>
+          <NavLink to="/reports">Reports</NavLink>
         </nav>
       </header>
       <main>
@@ -29,6 +32,8 @@ export default function App() {
           <Route path="/advisories" element={<AdvisoryListPage />} />
           <Route path="/advisory/:advisoryId" element={<AdvisoryDetailPage />} />
           <Route path="/investigations" element={<InvestigationPage />} />
+          <Route path="/reports" element={<ReportListPage />} />
+          <Route path="/reports/:reportId" element={<ReportPage />} />
           <Route path="*" element={<p>Page not found. <Link to="/">Go to the list</Link></p>} />
         </Routes>
       </main>

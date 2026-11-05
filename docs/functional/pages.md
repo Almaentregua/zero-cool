@@ -142,4 +142,33 @@ Anything missing is shown as "not available".
 10.0, that CISA marks exploitation as *active*, that its weakness is CWE-502 (deserialization of
 untrusted data), and which Maven packages fix it.
 
-Saving an investigation as a report to continue later is coming next.
+**Keeping it:** below the search box, **Save as report** stores what every source said right now
+under a title you choose (optional). It opens the new report.
+
+## Reports
+
+**Problem it solves:** pick up an investigation later, with your notes and the evidence as you left it.
+
+**The list** (menu **Reports**) shows your saved reports, the most recently updated first.
+
+**Opening a report** shows:
+- Its **notes**, written by you. Press **Edit notes** to change them; there is a preview while you
+  type. Notes accept Markdown (headings, lists, bold, links, code). Choose **Markdown** or **Plain text**
+  to decide how they are shown; Plain text shows exactly what you typed. Your choice is remembered in
+  this browser and changing it never alters the notes. For safety, raw HTML in notes is ignored, only
+  web links (http/https) are clickable and images are not loaded.
+- The **CVEs** in the report. You can add more (**Add and investigate**) or remove them; a report keeps
+  between 1 and 10.
+- For each CVE, the same **sources consulted** list and **one block per source** as in Investigations, with
+  the source, its link, when it was retrieved and its status. This is a **saved snapshot**: it shows what
+  the sources said when the data was retrieved.
+
+**Buttons:**
+| Button | What it does |
+|--------|--------------|
+| Refresh from the sources | Asks every source again and lists **what changed** (new data, a source that now has or lost data, fields that changed). If a source fails during a refresh, its previous data is kept and the list says so |
+| Rename | Changes the title |
+| Mark as done / Reopen | Marks the investigation as finished or active again |
+| Delete | Deletes the report after asking for confirmation. It cannot be undone |
+
+There are no user accounts in this version: anyone who can open the app sees and edits all reports.

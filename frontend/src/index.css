@@ -127,3 +127,14 @@ article li { overflow-wrap: anywhere; }
 .status-ok { color: var(--sev-low); }
 .status-no_data { color: var(--muted); }
 .status-error { color: var(--danger); }
+
+.save-panel, .report-bar, .add-cves { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; margin: 1rem 0; }
+.save-panel label, .report-bar label, .add-cves label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.85rem; color: var(--muted); flex: 1 1 16rem; }
+button.danger { color: var(--danger); border-color: var(--danger); }
+.changes { background: var(--surface); border: 1px solid var(--accent); border-radius: 8px; padding: 0.25rem 1rem 0.5rem; margin: 1rem 0; }
+.notes-plain { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
+.notes-markdown { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.25rem 1rem; overflow-wrap: anywhere; }
+.notes-editor textarea { width: 100%; font: inherit; font-family: ui-monospace, monospace; }
+.notes-editor label { display: flex; flex-direction: column; gap: 0.25rem; }
+.mode-switch { margin-bottom: 0.75rem; width: fit-content; }
+.cve-chips { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; }
