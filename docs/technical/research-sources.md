@@ -54,3 +54,7 @@ reading stored data first, which keeps one code path for KEV and non-KEV CVEs.
 ## Adding a source
 Create a module in `research/adapters/` with a class that follows the interface and add it
 to `build_sources` in `research/registry.py`. Tests use mocked HTTP, never real APIs.
+
+## Comparing snapshots (`research/diff.py`)
+`diff_result(old, new)` compares a stored block with a fresh one, ignoring timestamps, and
+returns `None` when nothing changed. Used by the report refresh.

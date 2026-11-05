@@ -101,8 +101,32 @@ when it is not `ok`. Blocks are never merged. One failing source never fails the
 an `error` block. The id is case-insensitive; **422** if it is not a valid CVE id (no source is
 called). The shape of `data` depends on the source.
 
+## Reports (`/api/reports`)
+Saved investigations ([ADR 0004](adr/0004-investigations-on-demand-and-snapshots.md)). A report
+holds a title, Markdown `notes`, a `status` (`open` / `done`), 1 to 10 CVEs and one saved block per
+CVE and source (the same block shape as `/api/research`), stored as a snapshot.
+
+| Endpoint | What it does |
+|----------|--------------|
+| `POST /api/reports` | `{title, cves, notes?}`: investigates every CVE and saves the answers. **201** |
+| `GET /api/reports` | Reports by most recent update (no notes or blocks) |
+| `GET /api/reports/{id}` | The report with its saved blocks. Queries nothing. **404** if unknown |
+| `PATCH /api/reports/{id}` | Any of `title`, `notes`, `status`, `add_cves`, `remove_cves`. Added CVEs are investigated now; removed ones lose their blocks |
+| `POST /api/reports/{id}/refresh` | Queries everything again (ignores the cache) and returns `{report, changes}` |
+| `DELETE /api/reports/{id}` | Deletes the report. **204** |
+
+- `changes` lists only what differs: `new`, `status`, `data` (with the top-level `fields` that
+  changed) or `refresh_failed`. A source that fails during a refresh keeps its previous block,
+  so a refresh never replaces good data with an error. Changes are not stored; they are returned once.
+- CVE ids are normalized and de-duplicated; any invalid id gives **422** and nothing is saved.
+  A report always keeps between 1 and 10 CVEs.
+- `notes` are untrusted text (max 100,000 characters): clients render them without raw HTML.
+- There is no login (out of scope in v1): anyone who can reach the API can edit or delete
+  reports. CORS allows `GET`, `POST`, `PATCH` and `DELETE` from the configured origins only.
+- Creating or refreshing takes a few seconds per CVE (all sources are queried).
+
 ## Implementation notes
-- Routes: `api/routes.py` (KEV vulnerabilities, technologies), `api/advisories.py` and `api/research.py`; shared
+- Routes: `api/routes.py` (KEV vulnerabilities, technologies), `api/advisories.py`, `api/research.py` and `api/reports.py`; shared
   dependencies: `api/deps.py`; response models: `api/schemas.py`; filter and sort logic: `queries.py`.
 - All values reach SQL as bound parameters (no SQL injection).
 - A technology filter expands to its vendor/product pairs from `technologies.yaml`

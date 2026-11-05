@@ -52,3 +52,7 @@ also accept new sources over time without redesign.
 - Snapshots grow the database; findings are small JSON payloads, which is acceptable for
   a single user on SQLite (ADR 0001).
 - The Markdown renderer must be chosen with sanitization as a hard requirement.
+- Report endpoints have no authentication (no users in v1): fine for local single-user use,
+  to be revisited before any non-local deployment.
+- A refresh that fails for a source keeps that source's previous snapshot and reports it as
+  `refresh_failed`; the diff is returned once and not stored.
