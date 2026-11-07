@@ -4,7 +4,8 @@ Web application to stay up to date with new security vulnerabilities, with as
 much detail as possible. Browse vulnerabilities by date, technology, severity,
 exploitation status and more, and search by CVE ID or free text. The **Investigations**
 page looks up any CVE across seven sources (each shown on its own, with origin and time) and
-saves reports with your notes to continue later.
+saves reports with your notes to continue later. The **Docs** section explains the data sources and
+security terms (CVSS, EPSS, KEV, CWE...) with examples, and has a search box.
 
 ## Status
 
@@ -82,6 +83,7 @@ Run `make help` for the full list. Main targets:
 - What each page/API offers: `docs/functional/pages.md` and `docs/technical/api.md`
 - v1 scope: `docs/technical/scope.md`
 - Investigations: `docs/technical/design/cve-research.md`, `docs/technical/research-sources.md` and ADR 0004
+- Docs section of the app (topics and how to add one): `docs/technical/frontend.md`
 - Functional docs: `docs/functional/`
 - Technical docs: `docs/technical/`
 - Architecture decisions: `docs/technical/adr/`

@@ -1,7 +1,7 @@
 # Pages
 
 > Status: **available** (v1a and v1b). Open http://localhost:5173 after `make dev`.
-> The top menu switches between **Known exploited (KEV)**, **Package advisories** and **Investigations**.
+> The top menu switches between **Known exploited (KEV)**, **Package advisories**, **Investigations**, **Reports** and **Docs**.
 
 ## Vulnerability list
 
@@ -172,3 +172,26 @@ under a title you choose (optional). It opens the new report.
 | Delete | Deletes the report after asking for confirmation. It cannot be undone |
 
 There are no user accounts in this version: anyone who can open the app sees and edits all reports.
+
+## Docs
+
+**Problem it solves:** understand the security terms and data sources behind the numbers, without leaving the app. It is written
+for developers who are not security specialists: technical, but short, with examples and links to keep learning.
+
+**How to use it** (menu **Docs**):
+- The side list groups the topics into **Sources** and **Concepts**. On a small screen the list can be collapsed.
+- The **search box** looks in titles, related words and the text of every topic, and shows where the words were found. Every word you type
+  must appear in the topic. Example: `deserialization` finds *CWE*; `ransomware` finds *CISA KEV* and *KEV and ransomware use*.
+- Each topic starts with a short summary and a list of its sections. The last section, **Keep investigating**, links to the official pages
+  and to related topics.
+- Next to many terms in the other pages (CVSS, EPSS, KEV, CVSS vector, ecosystems, fixed versions, the name of each source in an
+  investigation) there is a small **?** that opens the matching topic.
+
+**What each group has:**
+| Group | Topics |
+|-------|--------|
+| Sources | CISA KEV, NVD, EPSS (FIRST), OSV.dev, GitHub Advisories, CVE.org, CISA Vulnrichment, MITRE CWE. Each one says its website, who runs it, what it provides, an example, how this app uses it and its common pitfalls |
+| Concepts | CVE, CNA and ADP, CVSS, CVSS vector (with an interactive breakdown), CWE, CPE, EPSS, KEV and ransomware use, SSVC, package advisories, affected and fixed versions, "severity is not priority" and a step-by-step reading of Log4Shell |
+
+The topics are written from the official pages of each source and can become outdated (for example, NVD changed how it analyzes CVEs
+in 2026). Each topic links to its official page so you can check the current state.
