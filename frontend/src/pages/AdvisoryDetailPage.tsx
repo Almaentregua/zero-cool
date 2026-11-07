@@ -2,6 +2,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 
 import { ApiError, fetchAdvisory, type AdvisoryDetail } from "../api";
 import { SeverityBadge, YesNo } from "../components/Badges";
+import { DocHelp } from "../components/DocHelp";
 import { NOT_AVAILABLE, describeRange, formatDate, formatEpss, formatText, safeUrl } from "../format";
 import { useFetch } from "../useFetch";
 
@@ -37,23 +38,41 @@ function Detail({ a }: { a: AdvisoryDetail }) {
       <p className="subtitle">{formatText(a.summary)}</p>
 
       <dl className="fields">
-        <dt>Severity</dt>
+        <dt>
+          Severity
+          <DocHelp slug="cvss" label="severity" />
+        </dt>
         <dd>
           <SeverityBadge severity={a.severity} />
         </dd>
-        <dt>CVSS vector</dt>
+        <dt>
+          CVSS vector
+          <DocHelp slug="cvss-vector" label="the CVSS vector" />
+        </dt>
         <dd>{formatText(a.cvss_vector)}</dd>
-        <dt>EPSS probability</dt>
+        <dt>
+          EPSS probability
+          <DocHelp slug="epss" label="EPSS" />
+        </dt>
         <dd>{formatEpss(a.epss_score)}</dd>
-        <dt>EPSS percentile</dt>
+        <dt>
+          EPSS percentile
+          <DocHelp slug="epss" label="the EPSS percentile" />
+        </dt>
         <dd>{formatEpss(a.epss_percentile)}</dd>
-        <dt>Reviewed by GitHub</dt>
+        <dt>
+          Reviewed by GitHub
+          <DocHelp group="sources" slug="github-advisories" label="GitHub Advisories" />
+        </dt>
         <dd>
           <YesNo value={a.github_reviewed} />
         </dd>
         <dt>Technologies</dt>
         <dd>{a.technologies.length > 0 ? a.technologies.join(", ") : NOT_AVAILABLE}</dd>
-        <dt>CVE</dt>
+        <dt>
+          CVE
+          <DocHelp slug="cve" label="CVE" />
+        </dt>
         <dd>
           {a.cves.length === 0
             ? NOT_AVAILABLE
@@ -78,10 +97,19 @@ function Detail({ a }: { a: AdvisoryDetail }) {
           <table>
             <thead>
               <tr>
-                <th>Ecosystem</th>
+                <th>
+                  Ecosystem
+                  <DocHelp slug="package-advisories" label="ecosystems" />
+                </th>
                 <th>Package</th>
-                <th>Affected versions (as reported)</th>
-                <th>Fixed in</th>
+                <th>
+                  Affected versions (as reported)
+                  <DocHelp slug="version-ranges" label="affected versions" />
+                </th>
+                <th>
+                  Fixed in
+                  <DocHelp slug="version-ranges" label="fixed versions" />
+                </th>
               </tr>
             </thead>
             <tbody>

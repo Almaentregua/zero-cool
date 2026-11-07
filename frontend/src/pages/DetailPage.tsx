@@ -2,6 +2,7 @@ import { Link, useLocation, useParams } from "react-router-dom";
 
 import { ApiError, fetchVulnerability } from "../api";
 import { SeverityBadge, YesNo } from "../components/Badges";
+import { DocHelp } from "../components/DocHelp";
 import { NOT_AVAILABLE, formatDate, formatEpss, formatScore, formatText, safeUrl } from "../format";
 import { useFetch } from "../useFetch";
 
@@ -37,23 +38,44 @@ function Detail({ v }: { v: Awaited<ReturnType<typeof fetchVulnerability>> }) {
       <p className="subtitle">{formatText(v.title)}</p>
 
       <dl className="fields">
-        <dt>Severity</dt>
+        <dt>
+          Severity
+          <DocHelp slug="cvss" label="severity" />
+        </dt>
         <dd>
           <SeverityBadge severity={v.severity} />
         </dd>
-        <dt>CVSS score</dt>
+        <dt>
+          CVSS score
+          <DocHelp slug="cvss" label="CVSS" />
+        </dt>
         <dd>{formatScore(v.cvss_score)}</dd>
-        <dt>CVSS vector</dt>
+        <dt>
+          CVSS vector
+          <DocHelp slug="cvss-vector" label="the CVSS vector" />
+        </dt>
         <dd>{formatText(v.cvss_vector)}</dd>
-        <dt>EPSS probability</dt>
+        <dt>
+          EPSS probability
+          <DocHelp slug="epss" label="EPSS" />
+        </dt>
         <dd>{formatEpss(v.epss_score)}</dd>
-        <dt>EPSS percentile</dt>
+        <dt>
+          EPSS percentile
+          <DocHelp slug="epss" label="the EPSS percentile" />
+        </dt>
         <dd>{formatEpss(v.epss_percentile)}</dd>
-        <dt>Actively exploited (KEV)</dt>
+        <dt>
+          Actively exploited (KEV)
+          <DocHelp slug="kev" label="KEV" />
+        </dt>
         <dd>
           <YesNo value={v.is_kev} />
         </dd>
-        <dt>Used in ransomware</dt>
+        <dt>
+          Used in ransomware
+          <DocHelp slug="kev" label="ransomware use" />
+        </dt>
         <dd>
           <YesNo value={v.ransomware_use} yesClass="danger" />
         </dd>
@@ -65,7 +87,10 @@ function Detail({ v }: { v: Awaited<ReturnType<typeof fetchVulnerability>> }) {
         <dd>{v.technologies.length > 0 ? v.technologies.join(", ") : NOT_AVAILABLE}</dd>
         <dt>Date added to KEV</dt>
         <dd>{formatDate(v.date_added)}</dd>
-        <dt>KEV remediation due</dt>
+        <dt>
+          KEV remediation due
+          <DocHelp slug="kev" label="the KEV due date" />
+        </dt>
         <dd>{formatDate(v.kev_due_date)}</dd>
         <dt>Published</dt>
         <dd>{formatDate(v.published_at)}</dd>

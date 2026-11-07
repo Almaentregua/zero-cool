@@ -1,8 +1,10 @@
+import type { ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { cleanAdvisoryParams, fetchAdvisories, fetchTechnologies } from "../api";
 import AdvisoryFilterBar from "../components/AdvisoryFilterBar";
 import { SeverityBadge } from "../components/Badges";
+import { DocHelp } from "../components/DocHelp";
 import Pagination from "../components/Pagination";
 import { NOT_AVAILABLE, formatDate, formatEpss, formatText } from "../format";
 import { useFetch } from "../useFetch";
@@ -36,7 +38,7 @@ export default function AdvisoryListPage() {
     setSearchParams(next);
   }
 
-  function sortableHeader(column: SortKey, label: string) {
+  function sortableHeader(column: SortKey, label: string, help?: ReactNode) {
     const current = sort === column ? (order === "desc" ? "descending" : "ascending") : "none";
     return (
       <th aria-sort={current}>
@@ -44,6 +46,7 @@ export default function AdvisoryListPage() {
           {label}
           {sort === column && <span aria-hidden="true"> {order === "desc" ? "▼" : "▲"}</span>}
         </button>
+        {help}
       </th>
     );
   }
@@ -78,11 +81,20 @@ export default function AdvisoryListPage() {
               <table>
                 <thead>
                   <tr>
-                    <th>Advisory</th>
+                    <th>
+                      Advisory
+                      <DocHelp slug="package-advisories" label="package advisories" />
+                    </th>
                     <th>Summary</th>
-                    <th>Severity</th>
-                    {sortableHeader("epss", "EPSS")}
-                    <th>CVE</th>
+                    <th>
+                      Severity
+                      <DocHelp slug="cvss" label="severity" />
+                    </th>
+                    {sortableHeader("epss", "EPSS", <DocHelp slug="epss" label="EPSS" />)}
+                    <th>
+                      CVE
+                      <DocHelp slug="cve" label="CVE" />
+                    </th>
                     <th>Packages</th>
                     {sortableHeader("published", "Published")}
                   </tr>

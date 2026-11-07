@@ -6,7 +6,9 @@ import App from "./App";
 import { DocBody } from "./components/DocBody";
 import { DOCS, docsInGroup, getDoc } from "./docs";
 import { extractHeadings, parseDoc, slugify, toPlainText } from "./docs/parse";
-import { CvssVectorBreakdown, DIAGRAMS, describeVectorPart } from "./docs/diagrams";
+import { describeVectorPart } from "./docs/cvssMetrics";
+import { DIAGRAMS } from "./docs/diagramRegistry";
+import { CvssVectorBreakdown } from "./docs/diagrams";
 import { highlightParts, searchDocs } from "./docs/search";
 
 function renderAt(path: string) {
@@ -242,5 +244,34 @@ describe("Diagrams", () => {
     await userEvent.click(screen.getByRole("button", { name: "PR:N" }));
     expect(screen.getByText(/no login needed/)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "PR:N" })).toHaveAttribute("aria-pressed", "true");
+  });
+});
+
+describe("Help links", () => {
+  const sources = import.meta.glob(["./pages/*.tsx", "./components/*.tsx"], { query: "?raw", import: "default", eager: true }) as Record<
+    string,
+    string
+  >;
+
+  test("every <DocHelp> in the app points to an existing topic", () => {
+    let found = 0;
+    for (const [file, code] of Object.entries(sources)) {
+      for (const [, attrs] of code.matchAll(/<DocHelp ([^>]*?)\/>/g)) {
+        const slug = /slug="([a-z0-9-]+)"/.exec(attrs)?.[1];
+        if (!slug) continue; // dynamic slug, covered by the test below
+        const group = /group="(sources|concepts)"/.exec(attrs)?.[1] ?? "concepts";
+        expect(getDoc(group, slug), `${file}: ${attrs}`).toBeDefined();
+        found++;
+      }
+    }
+    expect(found).toBeGreaterThan(20);
+  });
+
+  test("every research source has a topic", () => {
+    const code = sources["./components/SourceBlock.tsx"];
+    const block = /SOURCE_TOPIC[^{]*\{([^}]*)\}/.exec(code)?.[1] ?? "";
+    const slugs = [...block.matchAll(/:\s*"([a-z-]+)"/g)].map((m) => m[1]);
+    expect(slugs.length).toBe(7);
+    for (const slug of slugs) expect(getDoc("sources", slug), slug).toBeDefined();
   });
 });

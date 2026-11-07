@@ -1,7 +1,19 @@
 import type { SourceResult, SourceStatus } from "../api";
 import { STATUS_LABEL } from "../reportFormat";
 import { NOT_AVAILABLE, formatDateTime, safeUrl } from "../format";
+import { DocHelp } from "./DocHelp";
 import SourceData from "./SourceData";
+
+/** Docs topic that explains each research source (see `docs/content/sources`). */
+const SOURCE_TOPIC: Record<string, string> = {
+  kev: "cisa-kev",
+  nvd: "nvd",
+  epss: "epss",
+  osv: "osv",
+  cve_org: "cve-org",
+  vulnrichment: "cisa-vulnrichment",
+  cwe: "mitre-cwe",
+};
 
 /** List of every source consulted for a CVE with its status, linking to each block. */
 export function Summary({
@@ -33,6 +45,7 @@ export function SourceBlock({ result: r }: { result: SourceResult }) {
     <article className="source-block" id={`${r.cve_id}-${r.source}`}>
       <header>
         <h3>{r.source_name}</h3>
+        {SOURCE_TOPIC[r.source] && <DocHelp group="sources" slug={SOURCE_TOPIC[r.source]} label={r.source_name} />}
         <span className={`status status-${r.status}`}>{STATUS_LABEL[r.status]}</span>
       </header>
       <p className="meta muted">

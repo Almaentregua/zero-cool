@@ -1,7 +1,9 @@
+import type { ReactNode } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 
 import { cleanListParams, fetchTechnologies, fetchVulnerabilities } from "../api";
 import { SeverityBadge, YesNo } from "../components/Badges";
+import { DocHelp } from "../components/DocHelp";
 import FilterBar from "../components/FilterBar";
 import Pagination from "../components/Pagination";
 import { formatDate, formatEpss, formatScore, formatText } from "../format";
@@ -40,7 +42,7 @@ export default function ListPage() {
     return <span aria-hidden="true"> {order === "desc" ? "▼" : "▲"}</span>;
   }
 
-  function sortableHeader(column: SortKey, label: string) {
+  function sortableHeader(column: SortKey, label: string, help?: ReactNode) {
     const current = sort === column ? (order === "desc" ? "descending" : "ascending") : "none";
     return (
       <th aria-sort={current}>
@@ -48,6 +50,7 @@ export default function ListPage() {
           {label}
           {arrow(column)}
         </button>
+        {help}
       </th>
     );
   }
@@ -80,11 +83,20 @@ export default function ListPage() {
                   <tr>
                     <th>CVE</th>
                     <th>Title</th>
-                    <th>Severity</th>
-                    {sortableHeader("cvss", "CVSS")}
-                    {sortableHeader("epss", "EPSS")}
-                    <th>Exploited (KEV)</th>
-                    <th>Ransomware</th>
+                    <th>
+                      Severity
+                      <DocHelp slug="cvss" label="severity" />
+                    </th>
+                    {sortableHeader("cvss", "CVSS", <DocHelp slug="cvss" label="CVSS" />)}
+                    {sortableHeader("epss", "EPSS", <DocHelp slug="epss" label="EPSS" />)}
+                    <th>
+                      Exploited (KEV)
+                      <DocHelp slug="kev" label="KEV" />
+                    </th>
+                    <th>
+                      Ransomware
+                      <DocHelp slug="kev" label="ransomware use" />
+                    </th>
                     {sortableHeader("date_added", "Date added")}
                   </tr>
                 </thead>

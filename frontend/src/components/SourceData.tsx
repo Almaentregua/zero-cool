@@ -9,6 +9,7 @@
 import { Link } from "react-router-dom";
 import type { ReactNode } from "react";
 
+import { DocHelp } from "./DocHelp";
 import { NOT_AVAILABLE, formatDate, formatEpss, safeUrl } from "../format";
 
 type Data = Record<string, unknown>;
@@ -32,12 +33,24 @@ function yesNo(value: boolean | null): ReactNode {
   return value ? "Yes" : "No";
 }
 
+/** Labels that have a Docs topic, so a "?" is shown next to them. */
+const LABEL_TOPIC: Record<string, string> = {
+  "Exploitation probability (30 days)": "epss",
+  "Assigned by (CNA)": "cna-adp",
+  "SSVC: exploitation": "ssvc",
+  "SSVC: automatable": "ssvc",
+  "SSVC: technical impact": "ssvc",
+};
+
 function Fields({ rows }: { rows: [string, ReactNode][] }) {
   return (
     <dl className="fields">
       {rows.map(([label, value]) => (
         <div className="field-row" key={label}>
-          <dt>{label}</dt>
+          <dt>
+            {label}
+            {LABEL_TOPIC[label] && <DocHelp slug={LABEL_TOPIC[label]} label={label} />}
+          </dt>
           <dd>{value}</dd>
         </div>
       ))}

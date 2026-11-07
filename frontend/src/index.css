@@ -200,3 +200,6 @@ mark { background: color-mix(in srgb, var(--accent) 30%, transparent); color: in
 .vector-part { font-family: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--border); }
 .vector-part.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
 .vector-info { min-height: 2.8em; margin: 0.75rem 0 0; }
+
+.doc-help { display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; margin-left: 0.3rem; border: 1px solid var(--border); border-radius: 50%; font-size: 0.7rem; font-weight: 700; line-height: 1; text-decoration: none; color: var(--muted); vertical-align: middle; }
+.doc-help:hover, .doc-help:focus-visible { color: var(--accent); border-color: var(--accent); }

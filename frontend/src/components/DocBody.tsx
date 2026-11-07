@@ -2,7 +2,7 @@ import { Children, type ReactNode, isValidElement } from "react";
 import Markdown from "react-markdown";
 import { Link } from "react-router-dom";
 
-import { DIAGRAMS } from "../docs/diagrams";
+import { DIAGRAMS } from "../docs/diagramRegistry";
 import { slugify } from "../docs/parse";
 import { safeUrl } from "../format";
 

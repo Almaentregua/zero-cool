@@ -166,3 +166,20 @@ test("back link keeps the list filters", async () => {
   await userEvent.click(await screen.findByRole("link", { name: "CVE-2021-44228" }));
   expect(await screen.findByRole("link", { name: /Back to list/ })).toHaveAttribute("href", "/?technology=Java");
 });
+
+test("terms in the list and the detail page link to their docs topic", async () => {
+  mockApi();
+  const list = renderAt("/");
+  await screen.findByRole("link", { name: "CVE-2021-44228" });
+  expect(screen.getByRole("link", { name: "About CVSS" })).toHaveAttribute("href", "/docs/concepts/cvss");
+  expect(screen.getByRole("link", { name: "About EPSS" })).toHaveAttribute("href", "/docs/concepts/epss");
+  expect(screen.getByRole("link", { name: "About KEV" })).toHaveAttribute("href", "/docs/concepts/kev");
+  list.unmount();
+
+  renderAt("/cve/CVE-2021-44228");
+  await screen.findByRole("heading", { name: "CVE-2021-44228" });
+  expect(screen.getByRole("link", { name: "About the CVSS vector" })).toHaveAttribute(
+    "href",
+    "/docs/concepts/cvss-vector",
+  );
+});
