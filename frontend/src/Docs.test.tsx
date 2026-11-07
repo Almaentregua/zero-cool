@@ -128,6 +128,30 @@ describe("Docs pages", () => {
     for (const doc of DOCS) expect(doc.body.length).toBeGreaterThan(100);
   });
 
+  test("every source follows the same card and links to its official website", () => {
+    const sections = ["At a glance", "What it tells you", "Example", "How this app uses it", "Pitfalls", "Keep investigating"];
+    const sources = docsInGroup("sources");
+    expect(sources.map((d) => d.slug)).toEqual([
+      "cisa-kev",
+      "nvd",
+      "epss",
+      "osv",
+      "github-advisories",
+      "cve-org",
+      "cisa-vulnrichment",
+      "mitre-cwe",
+    ]);
+    for (const doc of sources) {
+      const texts = doc.headings.map((h) => h.text);
+      for (const section of sections) expect(texts, `${doc.slug} lacks "${section}"`).toContain(section);
+      expect(doc.body, `${doc.slug} lacks a Website row`).toMatch(/\| Website \| .*\]\(https:\/\//);
+    }
+  });
+
+  test("sources do not talk about API access", () => {
+    for (const doc of docsInGroup("sources")) expect(doc.plain).not.toMatch(/api key|rate limit/i);
+  });
+
   test("the index lists topics and the menu has a Docs link", () => {
     renderAt("/docs");
     expect(screen.getByRole("link", { name: "Docs", current: "page" })).toBeInTheDocument();
