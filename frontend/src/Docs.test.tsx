@@ -113,6 +113,17 @@ describe("DocBody", () => {
     expect(screen.getByRole("link", { name: "outer" })).toHaveAttribute("rel", "noopener noreferrer");
   });
 
+  test("renders tables", () => {
+    render(
+      <MemoryRouter>
+        <DocBody markdown={"| A | B |\n|---|---|\n| 1 | 2 |"} />
+      </MemoryRouter>,
+    );
+    expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "A" })).toBeInTheDocument();
+    expect(screen.getByRole("cell", { name: "2" })).toBeInTheDocument();
+  });
+
   test("gives sections an id and reports unknown diagrams", () => {
     render(
       <MemoryRouter>

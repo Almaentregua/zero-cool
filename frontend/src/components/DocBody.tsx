@@ -1,6 +1,7 @@
 import { Children, type ReactNode, isValidElement } from "react";
 import Markdown from "react-markdown";
 import { Link } from "react-router-dom";
+import remarkGfm from "remark-gfm";
 
 import { DIAGRAMS } from "../docs/diagramRegistry";
 import { slugify } from "../docs/parse";
@@ -29,13 +30,14 @@ function diagramName(children: ReactNode): string | null {
 
 /**
  * Renders the Markdown of a topic. Topics are bundled with the app, but they are still rendered
- * safely: raw HTML is dropped, images become their alt text and only topic or http(s) links work.
+ * safely: raw HTML is dropped, tables use GitHub-flavored Markdown (`remark-gfm`), images become their alt text and only topic or http(s) links work.
  */
 export function DocBody({ markdown }: { markdown: string }) {
   return (
     <div className="doc-body">
       <Markdown
         skipHtml
+        remarkPlugins={[remarkGfm]}
         urlTransform={docUrl}
         components={{
           h2: ({ children }) => <h2 id={slugify(textOf(children))}>{children}</h2>,

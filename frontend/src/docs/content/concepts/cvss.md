@@ -20,14 +20,6 @@ CVSS measures **how bad the flaw is in the abstract**. It does not say whether a
 severity-scale
 ```
 
-| Score | Severity (CVSS 3.x and 4.0) |
-|---|---|
-| 0.0 | None |
-| 0.1 – 3.9 | Low |
-| 4.0 – 6.9 | Medium |
-| 7.0 – 8.9 | High |
-| 9.0 – 10.0 | Critical |
-
 CVSS v2 has no *None* or *Critical* level: it only had Low, Medium and High.
 
 ## Versions
