@@ -176,3 +176,27 @@ mark { background: color-mix(in srgb, var(--accent) 30%, transparent); color: in
   .docs-layout { grid-template-columns: 1fr; }
   .docs-sidebar { position: static; max-height: none; }
 }
+
+/* Docs diagrams */
+.diagram { margin: 1rem 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; }
+.diagram figcaption { color: var(--muted); font-size: 0.85rem; margin-top: 0.5rem; }
+.diagram svg { width: 100%; height: auto; }
+.dg-box { fill: var(--bg); stroke: var(--border); stroke-width: 1.5; }
+.dg-title { fill: var(--text); font-weight: 700; font-size: 15px; }
+.dg-text { fill: var(--muted); font-size: 12px; }
+.dg-label { fill: var(--muted); font-size: 11px; font-style: italic; }
+.dg-line { stroke: var(--accent); stroke-width: 1.5; fill: none; }
+.dg-arrowhead { fill: var(--accent); }
+.scale { display: flex; gap: 2px; }
+.scale-band { display: flex; flex-direction: column; align-items: center; padding: 0.5rem 0.25rem; border-radius: 4px; border: 2px solid currentColor; min-width: 0; text-align: center; font-size: 0.85rem; }
+.scale-band span { font-size: 0.75rem; color: var(--text); }
+.scale-none { color: var(--muted); }
+.scale-low { color: var(--sev-low); }
+.scale-medium { color: var(--sev-medium); }
+.scale-high { color: var(--sev-high); }
+.scale-critical { color: var(--sev-critical); }
+.vector { display: flex; flex-wrap: wrap; gap: 0.35rem; font-family: ui-monospace, monospace; align-items: center; }
+.vector-version { color: var(--muted); padding: 0.4rem 0.2rem; }
+.vector-part { font-family: inherit; background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+.vector-part.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+.vector-info { min-height: 2.8em; margin: 0.75rem 0 0; }

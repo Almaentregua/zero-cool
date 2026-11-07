@@ -6,6 +6,7 @@ import App from "./App";
 import { DocBody } from "./components/DocBody";
 import { DOCS, docsInGroup, getDoc } from "./docs";
 import { extractHeadings, parseDoc, slugify, toPlainText } from "./docs/parse";
+import { CvssVectorBreakdown, DIAGRAMS, describeVectorPart } from "./docs/diagrams";
 import { highlightParts, searchDocs } from "./docs/search";
 
 function renderAt(path: string) {
@@ -183,5 +184,63 @@ describe("Docs pages", () => {
     await userEvent.clear(box);
     await userEvent.type(box, "zzzzqqq");
     expect(screen.getByText("No topics match “zzzzqqq”.")).toBeInTheDocument();
+  });
+});
+
+describe("Docs content", () => {
+  const exists = (path: string) => {
+    const match = /^\/docs\/(sources|concepts)\/([a-z0-9-]+)(?:#([a-z0-9-]+))?$/.exec(path);
+    if (!match) return false;
+    const doc = getDoc(match[1], match[2]);
+    return !!doc && (!match[3] || doc.headings.some((h) => h.id === match[3]));
+  };
+
+  test("every internal link points to an existing topic and section", () => {
+    for (const doc of DOCS) {
+      for (const [, path] of doc.body.matchAll(/\]\((\/docs[^)]*)\)/g)) {
+        expect(exists(path), `${doc.group}/${doc.slug} links to ${path}`).toBe(true);
+      }
+    }
+  });
+
+  test("every diagram used by a topic exists", () => {
+    for (const doc of DOCS) {
+      for (const [, name] of doc.body.matchAll(/```diagram\n([a-z-]+)\n```/g)) {
+        expect(Object.keys(DIAGRAMS), `${doc.slug} uses diagram ${name}`).toContain(name);
+      }
+    }
+  });
+
+  test("concepts have an example and further reading", () => {
+    const concepts = docsInGroup("concepts");
+    expect(concepts.length).toBe(13);
+    for (const doc of concepts) {
+      const texts = doc.headings.map((h) => h.text);
+      expect(texts, doc.slug).toContain("Keep investigating");
+      expect(texts.some((t) => t.startsWith("Example")), doc.slug).toBe(true);
+    }
+  });
+
+  test("every topic has a short summary and is not too long", () => {
+    for (const doc of DOCS) {
+      expect(doc.summary.length, doc.slug).toBeLessThan(160);
+      expect(doc.plain.split(" ").length, `${doc.slug} is too long`).toBeLessThan(1100);
+    }
+  });
+});
+
+describe("Diagrams", () => {
+  test("vector parts are explained", () => {
+    expect(describeVectorPart("AV:N")).toEqual({ name: "Attack Vector", meaning: expect.stringContaining("remotely") });
+    expect(describeVectorPart("ZZ:N")).toBeNull();
+    expect(describeVectorPart("AV:Q")).toBeNull();
+  });
+
+  test("selecting a part shows its meaning", async () => {
+    render(<CvssVectorBreakdown />);
+    expect(screen.getByText("Select or hover a part of the vector.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "PR:N" }));
+    expect(screen.getByText(/no login needed/)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "PR:N" })).toHaveAttribute("aria-pressed", "true");
   });
 });
